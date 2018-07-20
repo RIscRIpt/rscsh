@@ -2,8 +2,9 @@
 
 #include "resource.h"
 
-#include <sstream>
+#include <vector>
 #include <system_error>
+#include <cwchar>
 
 static INT_PTR CALLBACK main_dialog_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     Application *app;
@@ -33,6 +34,8 @@ Application::Application(HINSTANCE hInstance)
     , fontSize_(9)
 {
     create_main_dialog();
+
+    log(L"rscsh v0.1\r\n");
 }
 
 Application::~Application() {
@@ -51,12 +54,6 @@ int Application::run() {
     return msg.wParam;
 }
 
-void test(UINT msg) {
-    std::ostringstream ss;
-    ss << msg << '\n';
-    OutputDebugStringA(ss.str().c_str());
-}
-
 INT_PTR Application::main_dialog_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
         case WM_SIZE:
@@ -67,7 +64,6 @@ INT_PTR Application::main_dialog_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
         case WM_MOUSEWHEEL:
             if (LOWORD(wParam) & MK_CONTROL) {
                 change_font_size(static_cast<SHORT>(HIWORD(wParam)) >= 0 ? +1 : -1);
-                test(HIWORD(wParam));
                 return TRUE;
             }
             break;
@@ -85,7 +81,6 @@ INT_PTR Application::main_dialog_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
             PostQuitMessage(0);
             return TRUE;
     }
-    //test(uMsg);
     return FALSE;
 }
 
@@ -170,4 +165,48 @@ void Application::change_font_size(int delta) {
     SendMessage(hOutput_, WM_SETFONT, reinterpret_cast<WPARAM>(hOutputFont_), TRUE);
 
     update_main_dialog_layout();
+}
+
+void Application::log(char const *message) {
+    DWORD selStart, selEnd;
+
+    SendMessage(hOutput_, EM_GETSEL, reinterpret_cast<WPARAM>(&selStart), reinterpret_cast<WPARAM>(&selEnd));
+
+    int length = GetWindowTextLength(hOutput_);
+    SendMessage(hOutput_, EM_SETSEL, length, length);
+    SendMessageA(hOutput_, EM_REPLACESEL, FALSE, reinterpret_cast<LPARAM>(message));
+    SendMessage(hOutput_, EM_SETSEL, selStart, selEnd);
+}
+
+void Application::log(wchar_t const *message) {
+    DWORD selStart, selEnd;
+
+    SendMessage(hOutput_, EM_GETSEL, reinterpret_cast<WPARAM>(&selStart), reinterpret_cast<WPARAM>(&selEnd));
+
+    int length = GetWindowTextLength(hOutput_);
+    SendMessage(hOutput_, EM_SETSEL, length, length);
+    SendMessageW(hOutput_, EM_REPLACESEL, FALSE, reinterpret_cast<LPARAM>(message));
+    SendMessage(hOutput_, EM_SETSEL, selStart, selEnd);
+}
+
+void Application::logf(char const *fmt, ...) {
+    va_list vl;
+    std::vector<char> buffer(4096);
+
+    va_start(vl, fmt);
+    vsprintf(buffer.data(), fmt, vl);
+    va_end(vl);
+
+    log(buffer.data());
+}
+
+void Application::logf(wchar_t const *fmt, ...) {
+    va_list vl;
+    std::vector<wchar_t> buffer(2048);
+
+    va_start(vl, fmt);
+    vswprintf(buffer.data(), fmt, vl);
+    va_end(vl);
+
+    log(buffer.data());
 }

@@ -22,6 +22,12 @@ private:
     HFONT create_font(int size);
     void change_font_size(int delta);
 
+    void log(char const *message);
+    void log(wchar_t const *message);
+
+    void logf(char const *fmt, ...);
+    void logf(wchar_t const *fmt, ...);
+
     HINSTANCE hInstance_;
 
     HFONT hOutputFont_;
