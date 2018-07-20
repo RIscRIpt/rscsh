@@ -32,6 +32,9 @@ Application::Application(HINSTANCE hInstance)
     , hInput_(NULL)
     , origInputProc_(NULL)
     , fontSize_(9)
+    , rscContext_(SCARD_SCOPE_USER)
+    , rscReaders_(rscContext_, SCARD_DEFAULT_READERS)
+    , rscCard_(nullptr)
 {
     create_main_dialog();
 
@@ -121,6 +124,7 @@ void Application::update_main_dialog_layout() {
 bool Application::input_proc_char(WPARAM wParam, LPARAM lParam) {
     switch (wParam) {
         case VK_RETURN:
+            parse_input();
             return true;
     }
     return false;
@@ -209,4 +213,11 @@ void Application::logf(wchar_t const *fmt, ...) {
     va_end(vl);
 
     log(buffer.data());
+}
+
+void Application::parse_input() {
+    std::vector<char> buffer(4096);
+    GetWindowTextA(hInput_, buffer.data(), buffer.size());
+    logf("%s\r\n", buffer.data());
+    SetWindowTextA(hInput_, "");
 }

@@ -1,5 +1,9 @@
 #pragma once
 
+#include <rsc/Readers.h>
+#include <rsc/Context.h>
+#include <rsc/Card.h>
+
 #include <Windows.h>
 
 class Application {
@@ -27,6 +31,8 @@ private:
 
     void logf(char const *fmt, ...);
     void logf(wchar_t const *fmt, ...);
+    
+    void parse_input();
 
     HINSTANCE hInstance_;
 
@@ -40,4 +46,8 @@ private:
     WNDPROC origInputProc_;
 
     int fontSize_;
+
+    rsc::Context const rscContext_;
+    rsc::Readers rscReaders_;
+    std::unique_ptr<rsc::Card> rscCard_;
 };
