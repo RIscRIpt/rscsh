@@ -4,12 +4,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rscsh", "rscsh\rscsh.vcxproj", "{A3E6E2E7-6B32-4BB9-A993-67F341DE6499}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B52E4343-D1B2-4DD3-93EC-EFCECFC13999} = {B52E4343-D1B2-4DD3-93EC-EFCECFC13999}
+		{E36A0B68-A32A-49CB-9CCC-51E67A048B7D} = {E36A0B68-A32A-49CB-9CCC-51E67A048B7D}
+		{399280F4-09A3-4A02-8E5A-813597FE7816} = {399280F4-09A3-4A02-8E5A-813597FE7816}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rsc", "..\rsc\rsc\rsc.vcxproj", "{B52E4343-D1B2-4DD3-93EC-EFCECFC13999}"
+	ProjectSection(ProjectDependencies) = postProject
+		{399280F4-09A3-4A02-8E5A-813597FE7816} = {399280F4-09A3-4A02-8E5A-813597FE7816}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scb", "..\scb\scb\scb.vcxproj", "{399280F4-09A3-4A02-8E5A-813597FE7816}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scc", "..\scc\scc\scc.vcxproj", "{E36A0B68-A32A-49CB-9CCC-51E67A048B7D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{399280F4-09A3-4A02-8E5A-813597FE7816} = {399280F4-09A3-4A02-8E5A-813597FE7816}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
