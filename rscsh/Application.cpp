@@ -22,6 +22,10 @@ static INT_PTR CALLBACK input_proc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
     return app->input_proc(hwnd, uMsg, wParam, lParam);
 }
 
+char const *Application::APP_NAME = "rscsh v0.1";
+
+int const Application::MIN_FONT_SIZE = 9;
+int const Application::MAX_FONT_SIZE = 36;
 
 Application::Application(HINSTANCE hInstance)
     : hInstance_(hInstance)
@@ -31,14 +35,14 @@ Application::Application(HINSTANCE hInstance)
     , hOutput_(NULL)
     , hInput_(NULL)
     , origInputProc_(NULL)
-    , fontSize_(9)
-    , rscContext_(SCARD_SCOPE_USER)
-    , rscReaders_(rscContext_, SCARD_DEFAULT_READERS)
-    , rscCard_(nullptr)
+    , fontSize_(MIN_FONT_SIZE)
+    , shell_(&shell_log_)
 {
     create_main_dialog();
 
-    log(L"rscsh v0.1\r\n");
+    logf("%s\r\n", APP_NAME);
+
+    initialize_shell();
 }
 
 Application::~Application() {
@@ -121,6 +125,49 @@ void Application::update_main_dialog_layout() {
     SetWindowPos(hInput_, NULL, 0, rcDialog.bottom - rcDialog.top - inputHeight, rcDialog.right - rcDialog.left, inputHeight, SWP_NOZORDER);
 }
 
+void Application::initialize_shell() {
+    try {
+        shell_.create_context(SCARD_SCOPE_USER);
+        shell_.create_readers(SCARD_DEFAULT_READERS);
+        if (shell_.readers().list().size() == 0) {
+            log("No smart card readers are present in the system.\r\n");
+        } else if (shell_.readers().list().size() == 1) {
+            log("Only one reader present in the system.\r\n");
+            logf(L"Choosing reader \"%s\".\r\n", shell_.readers().list().front().c_str());
+            shell_.create_card(shell_.readers().list().front().c_str());
+        } else {
+            log("Multiple readers present in the system:\r\n");
+            for (auto const &reader : shell_.readers().list()) {
+                logf(L"    - \"%s\"\r\n", reader);
+            }
+            log("\r\n");
+        }
+    } catch (std::system_error const &e) {
+        if (e.code().value() == SCARD_E_NO_READERS_AVAILABLE) {
+            log("No smart card readers are present in the system.\r\n");
+        } else {
+            log("Failed to initialize shell.\r\n");
+            logf("Error: %s\r\n", e.what());
+        }
+    }
+    if (shell_.has_card()) {
+        try {
+            shell_.card().connect();
+            shell_log_ << "ATR: ";
+            shell_.card().atr().print(shell_log_, L" ");
+            shell_log_ << "\r\n";
+            log_shell();
+        } catch (std::system_error const &e) {
+            if (e.code().value() == SCARD_W_REMOVED_CARD) {
+                log("No card present in the reader.\r\n");
+            } else {
+                log("Unexpected error occured while trying to connect to the card.\r\n");
+                logf("Error: %s\r\n", e.what());
+            }
+        }
+    }
+}
+
 bool Application::input_proc_char(WPARAM wParam, LPARAM lParam) {
     switch (wParam) {
         case VK_RETURN:
@@ -152,10 +199,10 @@ HFONT Application::create_font(int size) {
 
 void Application::change_font_size(int delta) {
     fontSize_ += delta;
-    if (fontSize_ < 9)
-        fontSize_ = 9;
-    else if (fontSize_ > 36)
-        fontSize_ = 36;
+    if (fontSize_ < MIN_FONT_SIZE)
+        fontSize_ = MIN_FONT_SIZE;
+    else if (fontSize_ > MAX_FONT_SIZE)
+        fontSize_ = MAX_FONT_SIZE;
 
     if (hOutputFont_)
         DeleteObject(hOutputFont_);
@@ -169,6 +216,13 @@ void Application::change_font_size(int delta) {
     SendMessage(hOutput_, WM_SETFONT, reinterpret_cast<WPARAM>(hOutputFont_), TRUE);
 
     update_main_dialog_layout();
+
+    auto currentStyle = GetWindowLongPtr(hInput_, GWL_STYLE);
+    if (fontSize_ == MIN_FONT_SIZE) {
+        SetWindowLongPtr(hInput_, GWL_STYLE, currentStyle | ES_UPPERCASE);
+    } else {
+        SetWindowLongPtr(hInput_, GWL_STYLE, currentStyle & ~ES_UPPERCASE);
+    }
 }
 
 void Application::log(char const *message) {
@@ -215,9 +269,28 @@ void Application::logf(wchar_t const *fmt, ...) {
     log(buffer.data());
 }
 
+void Application::log_shell() {
+    log(shell_log_.str().c_str());
+    clear_shell_log();
+}
+
+void Application::clear_shell_log() {
+    shell_log_.str(std::wstring());
+    shell_log_.clear();
+}
+
 void Application::parse_input() {
-    std::vector<char> buffer(4096);
-    GetWindowTextA(hInput_, buffer.data(), buffer.size());
-    logf("%s\r\n", buffer.data());
-    SetWindowTextA(hInput_, "");
+    std::vector<wchar_t> buffer(2048);
+    GetWindowText(hInput_, buffer.data(), buffer.size());
+    SetWindowText(hInput_, L"");
+    try {
+        shell_.execute(buffer.data());
+        log_shell();
+    } catch (std::system_error const &e) {
+        logf("Error: %s\r\n", e.what());
+        switch (e.code().value()) {
+        }
+    } catch (std::exception const &e) {
+        logf("Error: %s\r\n", e.what());
+    }
 }

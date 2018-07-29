@@ -8,6 +8,9 @@
     <Filter Include="Application">
       <UniqueIdentifier>{a4331bcd-8a7e-43c4-b203-b6fe96d72f35}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shell">
+      <UniqueIdentifier>{4c73e299-f507-46bf-8c9b-acaa42be3128}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="rscsh.rc">
@@ -21,11 +24,17 @@
     <ClInclude Include="Application.h">
       <Filter>Application</Filter>
     </ClInclude>
+    <ClInclude Include="Shell.h">
+      <Filter>Shell</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Application.cpp">
       <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Shell.cpp">
+      <Filter>Shell</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

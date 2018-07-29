@@ -1,8 +1,6 @@
 #pragma once
 
-#include <rsc/Readers.h>
-#include <rsc/Context.h>
-#include <rsc/Card.h>
+#include "Shell.h"
 
 #include <Windows.h>
 
@@ -16,10 +14,17 @@ public:
     INT_PTR CALLBACK main_dialog_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
     INT_PTR CALLBACK input_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+    static char const *APP_NAME;
+    
+    static int const MIN_FONT_SIZE;
+    static int const MAX_FONT_SIZE;
+
 private:
     void create_main_dialog();
     void initialize_main_dialog();
     void update_main_dialog_layout();
+
+    void initialize_shell();
 
     bool input_proc_char(WPARAM wParam, LPARAM lParam);
 
@@ -31,6 +36,9 @@ private:
 
     void logf(char const *fmt, ...);
     void logf(wchar_t const *fmt, ...);
+
+    void log_shell();
+    void clear_shell_log();
     
     void parse_input();
 
@@ -47,7 +55,6 @@ private:
 
     int fontSize_;
 
-    rsc::Context const rscContext_;
-    rsc::Readers rscReaders_;
-    std::unique_ptr<rsc::Card> rscCard_;
+    Shell shell_;
+    std::wostringstream shell_log_;
 };
