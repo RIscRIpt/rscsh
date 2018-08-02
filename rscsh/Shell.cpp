@@ -4,9 +4,10 @@
 #include <algorithm>
 
 const std::unordered_map<std::wstring, void (Shell::*)(std::vector<std::wstring> const &)> Shell::command_map_{
-    { L"dump", &Shell::dump },
     { L"readers", &Shell::readers },
     { L"connect", &Shell::connect },
+    { L"dump",    &Shell::dump },
+    { L"parse",   &Shell::parse },
 };
 
 Shell::Shell(std::wostringstream *execution_yield)
@@ -67,11 +68,6 @@ void Shell::execute(rsc::cAPDU const &capdu) {
     }
 }
 
-void Shell::dump(std::vector<std::wstring> const&) {
-    last_rapdu_.buffer().dump(*execution_yield_);
-    *execution_yield_ << "\r\n";
-}
-
 void Shell::readers(std::vector<std::wstring> const&) {
     if (!has_context())
         create_context(SCARD_SCOPE_USER);
@@ -112,4 +108,65 @@ void Shell::connect(std::vector<std::wstring> const &argv) {
     *execution_yield_ << "ATR: ";
     card().atr().print(*execution_yield_, L" ");
     *execution_yield_ << "\r\n";
+}
+
+void Shell::dump(std::vector<std::wstring> const &argv) {
+    if (argv.size() == 1) {
+        last_rapdu_.buffer().dump(*execution_yield_);
+        *execution_yield_ << "\r\n";
+    } else if (argv.size() > 1) {
+        scb::Bytes bytes;
+        for (size_t i = 1; i < argv.size(); i++) {
+            auto const &arg = argv[i];
+            bytes += arg;
+        }
+        bytes.dump(*execution_yield_);
+        *execution_yield_ << "\r\n";
+    }
+}
+
+void Shell::parse(std::vector<std::wstring> const &argv) {
+    if (argv.size() == 1) {
+        parse(last_rapdu_.tlv_list());
+    } else {
+        scb::Bytes bytes;
+        for (size_t i = 1; i < argv.size(); i++) {
+            auto const &arg = argv[i];
+            bytes += arg;
+        }
+        parse(bytes);
+    }
+}
+
+void Shell::parse(rsc::TLVList const &tlvList, size_t parse_depth) const {
+    std::wstring prefix;
+    for (size_t i = 0; i < parse_depth; i++) {
+        prefix += L"| ";
+    }
+    for (auto const &tlv : tlvList) {
+        *execution_yield_
+            << prefix
+            << "* ";
+        tlv.tag().bytes().print(*execution_yield_);
+        *execution_yield_
+            << " (" << tlv.length() << ") " << tlv.tag().name()
+            << "\r\n"
+            << prefix
+            << "|\\\r\n";
+
+        if (tlv.tag().is_constructed()) {
+            parse(tlv.value_as_tlv_list(), parse_depth + 1);
+        } else {
+            for (size_t i = 0; i < tlv.value().size(); i += 16) {
+                size_t length = 16;
+                if (i + length >= tlv.value().size())
+                    length = tlv.value().size() - i;
+                *execution_yield_ << prefix << "| ";
+                tlv.value().bytes(i, length).print(*execution_yield_);
+                *execution_yield_ << "\r\n";
+            }
+        }
+
+        *execution_yield_ << prefix << "|/\r\n";
+    }
 }

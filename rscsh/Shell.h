@@ -32,9 +32,12 @@ public:
     inline rsc::Card& card() { return *rscCard_; }
 
 private:
-    void dump(std::vector<std::wstring> const&);
     void readers(std::vector<std::wstring> const&);
     void connect(std::vector<std::wstring> const &argv);
+    void dump(std::vector<std::wstring> const &argv);
+    void parse(std::vector<std::wstring> const &argv);
+
+    void parse(rsc::TLVList const &tlvList, size_t parse_depth = 0) const;
 
     std::unique_ptr<rsc::Context> rscContext_ = nullptr;
     std::unique_ptr<rsc::Readers> rscReaders_ = nullptr;
