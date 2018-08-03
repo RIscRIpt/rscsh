@@ -38,6 +38,8 @@ private:
     void dump(std::vector<std::wstring> const &argv);
     void parse(std::vector<std::wstring> const &argv);
 
+    void select(std::vector<std::wstring> const &argv);
+
     void parse(rsc::TLVList const &tlvList, size_t parse_depth = 0) const;
     void parse_atr(scb::Bytes const &atr) const;
     void parse_atr_yield_interface_bytes(unsigned char byte, unsigned i) const;

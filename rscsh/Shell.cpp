@@ -11,6 +11,8 @@ const std::unordered_map<std::wstring, void (Shell::*)(std::vector<std::wstring>
     { L"connect", &Shell::connect },
     { L"dump",    &Shell::dump },
     { L"parse",   &Shell::parse },
+
+    { L"select",  &Shell::select },
 };
 
 Shell::Shell(std::wostringstream *execution_yield)
@@ -158,6 +160,44 @@ void Shell::parse(std::vector<std::wstring> const &argv) {
         }
         parse(bytes);
     }
+}
+
+void Shell::select(std::vector<std::wstring> const &argv) {
+    scb::Bytes name;
+    bool first;
+    scb::Bytes::StringAs stringAs;
+
+    if (argv.size() < 4) {
+    usage:
+        *execution_yield_ << "usage: SELECT <first/next> <ascii/hex> <name>\r\n";
+        return;
+    }
+
+    if (argv[1] == L"first") {
+        first = true;
+    } else if (argv[1] == L"next") {
+        first = false;
+    } else {
+        goto usage;
+    }
+
+    if (argv[2] == L"ascii") {
+        stringAs = scb::Bytes::Raw;
+    } else if (argv[2] == L"hex") {
+        stringAs = scb::Bytes::Hex;
+    } else {
+        goto usage;
+    }
+
+    for (size_t i = 3; i < argv.size(); i++) {
+        name += scb::Bytes(argv[i], stringAs);
+    }
+
+    *execution_yield_ << "SELECT " << argv[1] << " hex ";
+    name.print(*execution_yield_);
+    *execution_yield_ << "\r\n";
+
+    execute(rsc::cAPDU::SELECT(name, true, first));
 }
 
 void Shell::parse(rsc::TLVList const &tlvList, size_t parse_depth) const {
