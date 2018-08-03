@@ -51,6 +51,8 @@ private:
     HWND hOutput_;
     HWND hInput_;
 
+    HICON hIcon_;
+
     WNDPROC origInputProc_;
 
     int fontSize_;

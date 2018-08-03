@@ -113,6 +113,11 @@ void Application::initialize_main_dialog() {
     origInputProc_ = reinterpret_cast<WNDPROC>(SetWindowLongPtr(hInput_, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(::input_proc)));
 
     change_font_size(0);
+
+    if ((hIcon_ = reinterpret_cast<HICON>(LoadImage(hInstance_, MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 0))) == NULL)
+        throw std::system_error(GetLastError(), std::generic_category());
+
+    SendMessage(hMainDialog_, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon_));
 }
 
 void Application::update_main_dialog_layout() {
