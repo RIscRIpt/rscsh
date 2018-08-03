@@ -28,6 +28,8 @@ private:
     void initialize_shell();
 
     bool input_proc_char(WPARAM wParam, LPARAM lParam);
+    bool input_proc_keydown(WPARAM wParam, LPARAM lParam);
+    bool input_proc_keyup(WPARAM wParam, LPARAM lParam);
 
     HFONT create_font(int size);
     void change_font_size(int delta);
@@ -57,6 +59,8 @@ private:
     WNDPROC origInputProc_;
 
     int fontSize_;
+
+    bool input_ctrl_pressed_;
 
     Shell shell_;
     std::wostringstream shell_log_;

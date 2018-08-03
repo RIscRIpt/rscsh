@@ -97,6 +97,15 @@ INT_PTR Application::input_proc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         case WM_CHAR:
             if (input_proc_char(wParam, lParam))
                 return FALSE;
+            break;
+        case WM_KEYDOWN:
+            if (input_proc_keydown(wParam, lParam))
+                return FALSE;
+            break;
+        case WM_KEYUP:
+            if (input_proc_keyup(wParam, lParam))
+                return FALSE;
+            break;
     }
     return CallWindowProc(origInputProc_, hwnd, uMsg, wParam, lParam);
 }
@@ -178,6 +187,32 @@ bool Application::input_proc_char(WPARAM wParam, LPARAM lParam) {
     switch (wParam) {
         case VK_RETURN:
             parse_input();
+            return true;
+        case VK_LBUTTON:
+            return true;
+    }
+    return false;
+}
+
+bool Application::input_proc_keydown(WPARAM wParam, LPARAM lParam) {
+    switch (wParam) {
+        case VK_CONTROL:
+            input_ctrl_pressed_ = true;
+            return true;
+        case 'A':
+            if (input_ctrl_pressed_) {
+                SendMessage(hInput_, EM_SETSEL, 0, -1);
+                return true;
+            }
+            break;
+    }
+    return false;
+}
+
+bool Application::input_proc_keyup(WPARAM wParam, LPARAM lParam) {
+    switch (wParam) {
+        case VK_CONTROL:
+            input_ctrl_pressed_ = false;
             return true;
     }
     return false;
