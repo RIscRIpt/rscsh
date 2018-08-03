@@ -42,6 +42,8 @@ void Shell::execute(LPCTSTR command) {
         std::istream_iterator<std::wstring, wchar_t>(cmd_stream),
         std::istream_iterator<std::wstring, wchar_t>()
     };
+    if (argv.empty())
+        return;
     for (auto &arg : argv)
         std::transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
     if (auto cmd = command_map_.find(argv[0]); cmd != command_map_.end()) {
