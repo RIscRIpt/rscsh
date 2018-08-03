@@ -17,6 +17,7 @@ public:
     static char const *APP_NAME;
     
     static int const MIN_FONT_SIZE;
+    static int const DEF_FONT_SIZE;
     static int const MAX_FONT_SIZE;
 
 private:

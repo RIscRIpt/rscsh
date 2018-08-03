@@ -24,7 +24,8 @@ static INT_PTR CALLBACK input_proc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 char const *Application::APP_NAME = "rscsh v0.1";
 
-int const Application::MIN_FONT_SIZE = 9;
+int const Application::MIN_FONT_SIZE = 12;
+int const Application::DEF_FONT_SIZE = 14;
 int const Application::MAX_FONT_SIZE = 36;
 
 Application::Application(HINSTANCE hInstance)
@@ -35,7 +36,7 @@ Application::Application(HINSTANCE hInstance)
     , hOutput_(NULL)
     , hInput_(NULL)
     , origInputProc_(NULL)
-    , fontSize_(MIN_FONT_SIZE)
+    , fontSize_(DEF_FONT_SIZE)
     , shell_(&shell_log_)
 {
     create_main_dialog();
@@ -197,7 +198,7 @@ HFONT Application::create_font(int size) {
         CLIP_DEFAULT_PRECIS,
         ANTIALIASED_QUALITY,
         CF_FIXEDPITCHONLY,
-        TEXT("Terminal")
+        TEXT("Consolas")
     );
 
 }
@@ -222,12 +223,14 @@ void Application::change_font_size(int delta) {
 
     update_main_dialog_layout();
 
+    /*
     auto currentStyle = GetWindowLongPtr(hInput_, GWL_STYLE);
     if (fontSize_ == MIN_FONT_SIZE) {
         SetWindowLongPtr(hInput_, GWL_STYLE, currentStyle | ES_UPPERCASE);
     } else {
         SetWindowLongPtr(hInput_, GWL_STYLE, currentStyle & ~ES_UPPERCASE);
     }
+    */
 }
 
 void Application::log(char const *message) {
