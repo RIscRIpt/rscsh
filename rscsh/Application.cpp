@@ -59,7 +59,7 @@ int Application::run() {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-    return msg.wParam;
+    return static_cast<int>(msg.wParam);
 }
 
 INT_PTR Application::main_dialog_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -295,7 +295,7 @@ void Application::logf(char const *fmt, ...) {
     std::vector<char> buffer(4096);
 
     va_start(vl, fmt);
-    vsprintf(buffer.data(), fmt, vl);
+    vsprintf_s(buffer.data(), buffer.size(), fmt, vl);
     va_end(vl);
 
     log(buffer.data());
@@ -306,7 +306,7 @@ void Application::logf(wchar_t const *fmt, ...) {
     std::vector<wchar_t> buffer(2048);
 
     va_start(vl, fmt);
-    vswprintf(buffer.data(), fmt, vl);
+    vswprintf(buffer.data(), buffer.size(), fmt, vl);
     va_end(vl);
 
     log(buffer.data());
@@ -324,15 +324,13 @@ void Application::clear_shell_log() {
 
 void Application::parse_input() {
     std::vector<wchar_t> buffer(2048);
-    GetWindowText(hInput_, buffer.data(), buffer.size());
+    GetWindowText(hInput_, buffer.data(), static_cast<int>(buffer.size()));
     SetWindowText(hInput_, L"");
     try {
         shell_.execute(buffer.data());
         log_shell();
     } catch (std::system_error const &e) {
         logf("Error: %s\r\n", e.what());
-        switch (e.code().value()) {
-        }
     } catch (std::exception const &e) {
         logf("Error: %s\r\n", e.what());
     }
