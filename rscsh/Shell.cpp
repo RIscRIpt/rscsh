@@ -223,7 +223,7 @@ void Shell::parse(rsc::TLVList const &tlvList, size_t parse_depth) const {
                 size_t length = 16;
                 if (i + length >= tlv.value().size())
                     length = tlv.value().size() - i;
-                *execution_yield_ << prefix << "| ";
+                *execution_yield_ << prefix << "| > ";
                 tlv.value().bytes(i, length).print(*execution_yield_);
                 *execution_yield_ << "\r\n";
             }
