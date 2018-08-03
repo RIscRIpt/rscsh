@@ -196,7 +196,7 @@ HFONT Application::create_font(int size) {
         DEFAULT_CHARSET,
         OUT_OUTLINE_PRECIS,
         CLIP_DEFAULT_PRECIS,
-        ANTIALIASED_QUALITY,
+        CLEARTYPE_NATURAL_QUALITY,
         CF_FIXEDPITCHONLY,
         TEXT("Consolas")
     );
