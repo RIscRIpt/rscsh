@@ -39,6 +39,7 @@ Application::Application(HINSTANCE hInstance)
     , hInput_(NULL)
     , origInputProc_(NULL)
     , fontSize_(DEF_FONT_SIZE)
+    , input_ctrl_pressed_(false)
     , shell_(&shell_log_)
 {
     create_main_dialog();
