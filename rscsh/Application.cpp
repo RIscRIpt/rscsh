@@ -6,6 +6,8 @@
 #include <system_error>
 #include <cwchar>
 
+#include "version.ver"
+
 static INT_PTR CALLBACK main_dialog_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     Application *app;
     if (uMsg == WM_INITDIALOG) {
@@ -22,7 +24,7 @@ static INT_PTR CALLBACK input_proc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
     return app->input_proc(hwnd, uMsg, wParam, lParam);
 }
 
-char const *Application::APP_NAME = "rscsh v0.1";
+char const *Application::APP_NAME = "rscsh " VERSION;
 
 int const Application::MIN_FONT_SIZE = 12;
 int const Application::DEF_FONT_SIZE = 14;

@@ -101,6 +101,9 @@
     <Link>
       <AdditionalDependencies>rsc.lib;scb.lib;libcrypto.lib;libssl.lib;crypt32.lib;ws2_32.lib;Winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)$(ProjectName)\gen_ver.bat</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -113,6 +116,9 @@
     <Link>
       <AdditionalDependencies>rsc.lib;scb.lib;libcrypto.lib;libssl.lib;crypt32.lib;ws2_32.lib;Winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)$(ProjectName)\gen_ver.bat</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -130,6 +136,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>rsc.lib;scb.lib;libcrypto.lib;libssl.lib;crypt32.lib;ws2_32.lib;Winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)$(ProjectName)\gen_ver.bat</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -146,6 +155,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>rsc.lib;scb.lib;libcrypto.lib;libssl.lib;crypt32.lib;ws2_32.lib;Winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)$(ProjectName)\gen_ver.bat</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
