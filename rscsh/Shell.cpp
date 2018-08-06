@@ -5,7 +5,7 @@
 
 #include <scb/ByteStream.h>
 
-const std::unordered_map<std::wstring, void (Shell::*)(std::vector<std::wstring> const &)> Shell::command_map_{
+std::unordered_map<std::wstring, void (Shell::*)(std::vector<std::wstring> const &)> const Shell::command_map_{
     { L"exit",    &Shell::exit },
     { L"readers", &Shell::readers },
     { L"connect", &Shell::connect },
@@ -14,6 +14,9 @@ const std::unordered_map<std::wstring, void (Shell::*)(std::vector<std::wstring>
 
     { L"select",  &Shell::select },
 };
+
+scb::Bytes const Shell::PSE1 = scb::Bytes("1PAY.SYS.DDF01", scb::Bytes::Raw);
+scb::Bytes const Shell::PSE2 = scb::Bytes("2PAY.SYS.DDF01", scb::Bytes::Raw);
 
 Shell::Shell(std::wostringstream *execution_yield)
     : execution_yield_(execution_yield)
@@ -58,7 +61,7 @@ void Shell::execute(LPCTSTR command) {
     }
 }
 
-void Shell::execute(rsc::cAPDU const &capdu) {
+rsc::rAPDU const& Shell::execute(rsc::cAPDU const &capdu) {
     if (!has_card())
         throw std::runtime_error("cannot execute cAPDU, no card present");
 
@@ -71,8 +74,9 @@ void Shell::execute(rsc::cAPDU const &capdu) {
         *execution_yield_ << "\r\n";
     }
     if (last_rapdu_.SW().response_bytes_still_available()) {
-        execute(rsc::cAPDU::GET_RESPONSE(last_rapdu_.SW().response_bytes_still_available()));
+        return execute(rsc::cAPDU::GET_RESPONSE(last_rapdu_.SW().response_bytes_still_available()));
     }
+    return last_rapdu_;
 }
 
 void Shell::exit(std::vector<std::wstring> const&) {
@@ -167,9 +171,21 @@ void Shell::select(std::vector<std::wstring> const &argv) {
     bool first;
     scb::Bytes::StringAs stringAs;
 
+    if (argv.size() == 2) {
+        if (argv[1] == L"auto")
+            select_auto();
+        else if (argv[1] == L"pse")
+            select_using_pse();
+        else if (argv[1] == L"bruteforce")
+            select_bruteforce();
+        else
+            goto usage;
+        return;
+    }
+
     if (argv.size() < 4) {
     usage:
-        *execution_yield_ << "usage: SELECT <first/next> <ascii/hex> <name>\r\n";
+        *execution_yield_ << "usage: SELECT [auto / pse / bruteforce / <first/next> <ascii/hex> <name>]\r\n";
         return;
     }
 
@@ -369,4 +385,27 @@ void Shell::parse_atr_yield_interface_bytes(unsigned char byte, unsigned i) cons
     if (byte & (1 << 5)) *execution_yield_ << "TB" << i << ' ';
     if (byte & (1 << 6)) *execution_yield_ << "TC" << i << ' ';
     if (byte & (1 << 7)) *execution_yield_ << "TD" << i << ' ';
+}
+
+void Shell::select_auto() {
+    *execution_yield_ << "Trying to select application using PSE\r\n";
+    if (select_using_pse())
+        return;
+
+    *execution_yield_ << "Falling back to brute force selection\r\n";
+    if (select_bruteforce())
+        return;
+
+    *execution_yield_ << "No known applications found on this card\r\n";
+}
+
+bool Shell::select_using_pse() {
+    // Select PSE
+    auto const &rapdu = execute(rsc::cAPDU::SELECT(PSE1));
+
+    return false;
+}
+
+bool Shell::select_bruteforce() {
+    return false;
 }

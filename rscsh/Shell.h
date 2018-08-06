@@ -21,7 +21,7 @@ public:
     void create_card(LPCTSTR szReader);
 
     void execute(LPCTSTR command);
-    void execute(rsc::cAPDU const &capdu);
+    rsc::rAPDU const& execute(rsc::cAPDU const &capdu);
 
     inline bool has_context() const noexcept { return rscContext_ != nullptr; }
     inline bool has_readers() const noexcept { return rscReaders_ != nullptr; }
@@ -37,12 +37,15 @@ private:
     void connect(std::vector<std::wstring> const &argv);
     void dump(std::vector<std::wstring> const &argv);
     void parse(std::vector<std::wstring> const &argv);
-
     void select(std::vector<std::wstring> const &argv);
 
     void parse(rsc::TLVList const &tlvList, size_t parse_depth = 0) const;
     void parse_atr(scb::Bytes const &atr) const;
     void parse_atr_yield_interface_bytes(unsigned char byte, unsigned i) const;
+
+    void select_auto();
+    bool select_using_pse();
+    bool select_bruteforce();
 
     std::unique_ptr<rsc::Context> rscContext_ = nullptr;
     std::unique_ptr<rsc::Readers> rscReaders_ = nullptr;
@@ -52,6 +55,7 @@ private:
 
     rsc::rAPDU last_rapdu_;
 
-    static const std::unordered_map<std::wstring, void (Shell::*)(std::vector<std::wstring> const &)> command_map_;
+    static std::unordered_map<std::wstring, void (Shell::*)(std::vector<std::wstring> const &)> const command_map_;
+    static scb::Bytes const PSE1, PSE2;
 };
 
