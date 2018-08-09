@@ -5,14 +5,15 @@
 
 #include <scb/ByteStream.h>
 
-const std::unordered_map<std::wstring, void (Shell::*)(std::vector<std::wstring> const &)> Shell::command_map_{
-    { L"exit",    &Shell::exit },
-    { L"readers", &Shell::readers },
-    { L"connect", &Shell::connect },
-    { L"dump",    &Shell::dump },
-    { L"parse",   &Shell::parse },
+std::unordered_map<std::wstring, void (Shell::*)(std::vector<std::wstring> const &)> const Shell::command_map_{
+    { L"exit",       &Shell::exit },
+    { L"readers",    &Shell::readers },
+    { L"connect",    &Shell::connect },
+    { L"disconnect", &Shell::disconnect },
+    { L"dump",       &Shell::dump },
+    { L"parse",      &Shell::parse },
 
-    { L"select",  &Shell::select },
+    { L"select",     &Shell::select },
 };
 
 Shell::Shell(std::wostringstream *execution_yield)
@@ -28,13 +29,13 @@ std::wostringstream* Shell::set_execution_yield(std::wostringstream *execution_y
 
 void Shell::create_context(DWORD dwScope) {
     rscContext_ = std::unique_ptr<rsc::Context>(new rsc::Context(dwScope));
-    rscReaders_ = nullptr;
-    rscCard_ = nullptr;
+    rscReaders_.reset();
+    rscCard_.reset();
 }
 
 void Shell::create_readers(LPCTSTR mszGroups) {
     rscReaders_ = std::make_unique<rsc::Readers>(*rscContext_, mszGroups);
-    rscCard_ = nullptr;
+    rscCard_.reset();
 }
 
 void Shell::create_card(LPCTSTR szReader) {
@@ -119,6 +120,13 @@ void Shell::connect(std::vector<std::wstring> const &argv) {
     *execution_yield_ << "ATR: ";
     card().atr().print(*execution_yield_, L" ");
     *execution_yield_ << "\r\n";
+}
+
+void Shell::disconnect(std::vector<std::wstring> const&) {
+    if (has_card()) {
+        card().disconnect();
+        rscCard_.reset();
+    }
 }
 
 void Shell::dump(std::vector<std::wstring> const &argv) {
