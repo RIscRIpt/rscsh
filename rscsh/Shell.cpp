@@ -73,6 +73,8 @@ void Shell::execute(rsc::cAPDU const &capdu) {
     }
     if (last_rapdu_.SW().response_bytes_still_available()) {
         execute(rsc::cAPDU::GET_RESPONSE(last_rapdu_.SW().response_bytes_still_available()));
+    } else if (last_rapdu_.SW().wrong_length()) {
+        execute(rsc::cAPDU::FIX_LENGTH(capdu, last_rapdu_.SW2()));
     }
 }
 
@@ -235,10 +237,20 @@ void Shell::parse(rsc::TLVList const &tlvList, size_t parse_depth) const {
                 tlv.value().bytes(i, length).print(*execution_yield_);
                 *execution_yield_ << "\r\n";
             }
+            if (tlv.value().all_ascii()) {
+                *execution_yield_
+                    << prefix
+                    << "| > ASCII: "
+                    << tlv.value().ascii()
+                    << "\r\n";
+            }
         }
 
         *execution_yield_ << prefix << "|/\r\n";
     }
+
+    if (parse_depth == 0)
+        *execution_yield_ << prefix << "\r\n";
 }
 
 void Shell::parse_atr(scb::Bytes const &atr) const {
