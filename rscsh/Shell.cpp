@@ -27,15 +27,15 @@ std::wostringstream* Shell::set_execution_yield(std::wostringstream *execution_y
     return old;
 }
 
-void Shell::create_context(DWORD dwScope) {
-    rscContext_ = std::unique_ptr<rsc::Context>(new rsc::Context(dwScope));
-    rscReaders_.reset();
-    rscCard_.reset();
+void Shell::create_context() {
+    rscContext_ = std::unique_ptr<rsc::Context>(new rsc::Context(SCARD_SCOPE_USER));
+    reset_readers();
+    reset_card();
 }
 
-void Shell::create_readers(LPCTSTR mszGroups) {
-    rscReaders_ = std::make_unique<rsc::Readers>(*rscContext_, mszGroups);
-    rscCard_.reset();
+void Shell::create_readers() {
+    rscReaders_ = std::make_unique<rsc::Readers>(*rscContext_, static_cast<LPCTSTR>(NULL));
+    reset_card();
 }
 
 void Shell::create_card(LPCTSTR szReader) {
@@ -84,10 +84,10 @@ void Shell::exit(std::vector<std::wstring> const&) {
 
 void Shell::readers(std::vector<std::wstring> const&) {
     if (!has_context())
-        create_context(SCARD_SCOPE_USER);
+        create_context();
 
     if (!has_readers()) {
-        create_readers(SCARD_DEFAULT_READERS);
+        create_readers();
     } else {
         readers().fetch();
     }
@@ -127,7 +127,7 @@ void Shell::connect(std::vector<std::wstring> const &argv) {
 void Shell::disconnect(std::vector<std::wstring> const&) {
     if (has_card()) {
         card().disconnect();
-        rscCard_.reset();
+        reset_card();
     }
 }
 

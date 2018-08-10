@@ -145,8 +145,8 @@ void Application::update_main_dialog_layout() {
 
 void Application::initialize_shell() {
     try {
-        shell_.create_context(SCARD_SCOPE_USER);
-        shell_.create_readers(SCARD_DEFAULT_READERS);
+        shell_.create_context();
+        shell_.create_readers();
         if (shell_.readers().list().size() == 0) {
             log("No smart card readers are present in the system.\r\n");
         } else if (shell_.readers().list().size() == 1) {
@@ -156,9 +156,26 @@ void Application::initialize_shell() {
         } else {
             log("Multiple readers present in the system:\r\n");
             for (auto const &reader : shell_.readers().list()) {
-                logf(L"    - \"%s\"\r\n", reader);
+                logf(L"    - \"%s\"\r\n", reader.c_str());
             }
-            log("\r\n");
+            log("\r\nTrying to connect to one of them ...\r\n\r\n");
+            for (auto const &reader : shell_.readers().list()) {
+                try {
+                    logf(L"Trying to connect to \"%s\" ...\r\n", reader.c_str());
+                    shell_.create_card(reader.c_str());
+                    shell_.card().connect();
+                    logf("Success.\r\n");
+                    break;
+                } catch (std::system_error const &e) {
+                    shell_.reset_card();
+                    if (e.code().value() == SCARD_W_REMOVED_CARD) {
+                        log("No card present in the reader.\r\n");
+                    } else {
+                        logf("Error: %s\r\n", e.what());
+                    }
+                }
+                log("\r\n");
+            }
         }
     } catch (std::system_error const &e) {
         if (e.code().value() == SCARD_E_NO_READERS_AVAILABLE) {
@@ -183,6 +200,11 @@ void Application::initialize_shell() {
                 logf("Error: %s\r\n", e.what());
             }
         }
+    } else {
+        log("No reader with the card was found.\r\n");
+        log("Use `readers` command to list available readers.\r\n");
+        log("Use `connect <id>` command to connect to one of available readers.\r\n");
+        log("\r\n");
     }
 }
 

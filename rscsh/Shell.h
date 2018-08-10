@@ -16,8 +16,8 @@ public:
 
     std::wostringstream* set_execution_yield(std::wostringstream *execution_yield);
 
-    void create_context(DWORD dwScope);
-    void create_readers(LPCTSTR mszGroups);
+    void create_context();
+    void create_readers();
     void create_card(LPCTSTR szReader);
 
     void execute(LPCTSTR command);
@@ -30,6 +30,10 @@ public:
     inline rsc::Context& context() { return *rscContext_; }
     inline rsc::Readers& readers() { return *rscReaders_; }
     inline rsc::Card& card() { return *rscCard_; }
+
+    inline void reset_context() { rscContext_.reset(); }
+    inline void reset_readers() { rscReaders_.reset(); }
+    inline void reset_card() { rscCard_.reset(); }
 
 private:
     void exit(std::vector<std::wstring> const&);
