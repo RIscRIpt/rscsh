@@ -155,13 +155,14 @@ void Application::initialize_shell() {
             shell_.create_card(shell_.readers().list().front().c_str());
         } else {
             log("Multiple readers present in the system:\r\n");
-            for (auto const &reader : shell_.readers().list()) {
-                logf(L"    - \"%s\"\r\n", reader.c_str());
+            for (size_t i = 0; i < shell_.readers().list().size(); i++) {
+                auto const &reader = shell_.readers().list()[i];
+                logf(L"    %d. \"%s\"\r\n", i, reader.c_str());
             }
-            log("\r\nTrying to connect to one of them ...\r\n\r\n");
+            log("\r\nTrying to connect to the card in one of them ...\r\n\r\n");
             for (auto const &reader : shell_.readers().list()) {
                 try {
-                    logf(L"Trying to connect to \"%s\" ...\r\n", reader.c_str());
+                    logf(L"Trying to connect to the card in \"%s\" ...\r\n", reader.c_str());
                     shell_.create_card(reader.c_str());
                     shell_.card().connect();
                     logf("Success.\r\n");
