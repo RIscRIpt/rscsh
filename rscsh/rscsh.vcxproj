@@ -163,6 +163,7 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Shell.h" />
+    <ClInclude Include="Shell_commands.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="rscsh.rc" />

@@ -6,15 +6,15 @@
 #include <scb/ByteStream.h>
 
 std::unordered_map<std::wstring, void (Shell::*)(std::vector<std::wstring> const &)> const Shell::command_map_{
-    { L"exit",       &Shell::exit },
-    { L"readers",    &Shell::readers },
-    { L"connect",    &Shell::connect },
-    { L"disconnect", &Shell::disconnect },
-    { L"reset",      &Shell::reset },
-    { L"dump",       &Shell::dump },
-    { L"parse",      &Shell::parse },
+#define X(name, func, _) { name, &Shell::func },
+#include "Shell_commands.h"
+#undef X
+};
 
-    { L"select",     &Shell::select },
+std::unordered_map<std::wstring, std::wstring> const Shell::help_map_{
+#define X(name, _, desc) { name, desc },
+#include "Shell_commands.h"
+#undef X
 };
 
 Shell::Shell(std::wostringstream *execution_yield)
@@ -77,6 +77,13 @@ void Shell::execute(rsc::cAPDU const &capdu) {
     } else if (last_rapdu_.SW().wrong_length()) {
         execute(rsc::cAPDU::FIX_LENGTH(capdu, last_rapdu_.SW2()));
     }
+}
+
+void Shell::help(std::vector<std::wstring> const &) {
+    for (auto const& [cmd, help] : help_map_) {
+        *execution_yield_ << "\r\n" << cmd << ' ' << help << "\r\n";
+    }
+    *execution_yield_ << "\r\n";
 }
 
 void Shell::exit(std::vector<std::wstring> const&) {
@@ -204,7 +211,7 @@ void Shell::select(std::vector<std::wstring> const &argv) {
 
     if (argv.size() < 4) {
     usage:
-        *execution_yield_ << "usage: SELECT <first/next> <ascii/hex> <name>\r\n";
+        *execution_yield_ << "usage: select <first/next> <ascii/hex> <name>\r\n";
         return;
     }
 

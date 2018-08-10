@@ -27,6 +27,9 @@
     <ClInclude Include="Shell.h">
       <Filter>Shell</Filter>
     </ClInclude>
+    <ClInclude Include="Shell_commands.h">
+      <Filter>Shell</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

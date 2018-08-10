@@ -36,6 +36,7 @@ public:
     inline void reset_card() { rscCard_.reset(); }
 
 private:
+    void help(std::vector<std::wstring> const&);
     void exit(std::vector<std::wstring> const&);
     void readers(std::vector<std::wstring> const&);
     void connect(std::vector<std::wstring> const &argv);
@@ -59,5 +60,6 @@ private:
     rsc::rAPDU last_rapdu_;
 
     static const std::unordered_map<std::wstring, void (Shell::*)(std::vector<std::wstring> const &)> command_map_;
+    static const std::unordered_map<std::wstring, std::wstring> help_map_;
 };
 
