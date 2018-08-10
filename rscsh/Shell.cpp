@@ -10,6 +10,7 @@ std::unordered_map<std::wstring, void (Shell::*)(std::vector<std::wstring> const
     { L"readers",    &Shell::readers },
     { L"connect",    &Shell::connect },
     { L"disconnect", &Shell::disconnect },
+    { L"reset",      &Shell::reset },
     { L"dump",       &Shell::dump },
     { L"parse",      &Shell::parse },
 
@@ -129,6 +130,30 @@ void Shell::disconnect(std::vector<std::wstring> const&) {
         card().disconnect();
         reset_card();
     }
+}
+
+void Shell::reset(std::vector<std::wstring> const &argv) {
+    if (!has_card())
+        return;
+
+    bool cold = true;
+    if (argv.size() > 1) {
+        if (argv[1] == L"cold")
+            cold = true;
+        else if (argv[1] == L"warm")
+            cold = false;
+        else
+            *execution_yield_ << "Unknown reset type \"" << argv[1] << "\". Cold reset will be done.\r\n";
+    } else {
+        *execution_yield_ << "Type of reset was not specified (cold or warm).\r\nImplying cold reset.\r\n";
+    }
+
+    card().cold_reset();
+    card().fetch_status();
+
+    *execution_yield_ << "ATR: ";
+    card().atr().print(*execution_yield_, L" ");
+    *execution_yield_ << "\r\n";
 }
 
 void Shell::dump(std::vector<std::wstring> const &argv) {

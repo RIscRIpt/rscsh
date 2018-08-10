@@ -40,6 +40,7 @@ private:
     void readers(std::vector<std::wstring> const&);
     void connect(std::vector<std::wstring> const &argv);
     void disconnect(std::vector<std::wstring> const&);
+    void reset(std::vector<std::wstring> const &argv);
     void dump(std::vector<std::wstring> const &argv);
     void parse(std::vector<std::wstring> const &argv);
 
