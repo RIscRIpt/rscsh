@@ -40,13 +40,17 @@ Application::Application(HINSTANCE hInstance)
     , origInputProc_(NULL)
     , fontSize_(DEF_FONT_SIZE)
     , input_ctrl_pressed_(false)
+    , rscEventListener_()
     , shell_(shell_log_, std::bind(&Application::shell_done, this))
 {
     create_main_dialog();
 
     logf("%s\r\n", APP_NAME);
 
-    initialize_shell();
+    rscEventListener_.listen_new_readers(true);
+
+    using namespace std::placeholders;
+    rscEventListener_.start(SCARD_STATE_EMPTY | SCARD_STATE_PRESENT, std::bind(&Application::rsc_event, this, _1, _2, _3));
 }
 
 Application::~Application() {
@@ -54,6 +58,7 @@ Application::~Application() {
         DeleteObject(hOutputFont_);
     if (hInputFont_)
         DeleteObject(hInputFont_);
+    rscEventListener_.stop();
 }
 
 int Application::run() {
@@ -146,67 +151,29 @@ void Application::update_main_dialog_layout() {
     SetWindowPos(hInput_, NULL, 0, rcDialog.bottom - rcDialog.top - inputHeight, rcDialog.right - rcDialog.left, inputHeight, SWP_NOZORDER);
 }
 
-void Application::initialize_shell() {
+void Application::rsc_event(DWORD event, rsc::Context const &context, std::wstring const &reader) {
     try {
-        shell_.cardShell().create_context();
-        shell_.cardShell().create_readers();
-        if (shell_.cardShell().readers().list().size() == 0) {
-            log("No smart card readers are present in the system.\r\n");
-        } else if (shell_.cardShell().readers().list().size() == 1) {
-            log("Only one reader present in the system.\r\n");
-            logf(L"Choosing reader \"%s\".\r\n", shell_.cardShell().readers().list().front().c_str());
-            shell_.cardShell().create_card(shell_.cardShell().readers().list().front().c_str());
-        } else {
-            log("Multiple readers present in the system:\r\n");
-            for (size_t i = 0; i < shell_.cardShell().readers().list().size(); i++) {
-                auto const &reader = shell_.cardShell().readers().list()[i];
-                logf(L"    %d. \"%s\"\r\n", i, reader.c_str());
+        shell_.cardShell().set_context(context);
+        if (event & SCARD_STATE_PRESENT) {
+            logf(L"Smart card was connected to the reader \"%s\"\r\n", reader.c_str());
+            if (!shell_.cardShell().has_card()) {
+                logf(L"Connecting ...\r\n");
+                Sleep(1000);
+                shell_.cardShell().create_card(reader.c_str());
+                shell_.cardShell().card().connect();
+                shell_.cardShell().print_connection_info();
+                log_shell();
             }
-            log("\r\nTrying to connect to the card in one of them ...\r\n\r\n");
-            for (auto const &reader : shell_.cardShell().readers().list()) {
-                try {
-                    logf(L"Trying to connect to the card in \"%s\" ...\r\n", reader.c_str());
-                    shell_.cardShell().create_card(reader.c_str());
-                    shell_.cardShell().card().connect();
-                    logf("Success.\r\n");
-                    break;
-                } catch (std::system_error const &e) {
+        } else if (event & SCARD_STATE_EMPTY) {
+            logf(L"Smart card was disconnected from the reader \"%s\"\r\n", reader.c_str());
+            if (shell_.cardShell().has_card()) {
+                if (shell_.cardShell().card().belongs_to(reader)) {
                     shell_.cardShell().reset_card();
-                    if (e.code().value() == SCARD_W_REMOVED_CARD) {
-                        log("No card present in the reader.\r\n");
-                    } else {
-                        logf("Error: %s\r\n", e.what());
-                    }
                 }
-                log("\r\n");
             }
         }
-    } catch (std::system_error const &e) {
-        if (e.code().value() == SCARD_E_NO_READERS_AVAILABLE) {
-            log("No smart card readers are present in the system.\r\n");
-        } else {
-            log("Failed to initialize shell.\r\n");
-            logf("Error: %s\r\n", e.what());
-        }
-    }
-    if (shell_.cardShell().has_card()) {
-        try {
-            shell_.cardShell().card().connect();
-            shell_.cardShell().print_connection_info();
-            log_shell();
-        } catch (std::system_error const &e) {
-            if (e.code().value() == SCARD_W_REMOVED_CARD) {
-                log("No card present in the reader.\r\n");
-            } else {
-                log("Unexpected error occured while trying to connect to the card.\r\n");
-                logf("Error: %s\r\n", e.what());
-            }
-        }
-    } else {
-        log("No reader with the card was found.\r\n");
-        log("Use `readers` command to list available readers.\r\n");
-        log("Use `connect <id>` command to connect to one of available readers.\r\n");
-        log("\r\n");
+    } catch (std::exception const &e) {
+        logf("Error: %s\r\n", e.what());
     }
 }
 

@@ -2,6 +2,8 @@
 
 #include "MainShell.h"
 
+#include <rsc/EventListener.h>
+
 #include <Windows.h>
 
 class Application {
@@ -27,7 +29,7 @@ private:
     void initialize_main_dialog();
     void update_main_dialog_layout();
 
-    void initialize_shell();
+    void rsc_event(DWORD event, rsc::Context const &context, std::wstring const &reader);
 
     bool input_proc_char(WPARAM wParam, LPARAM lParam);
     bool input_proc_keydown(WPARAM wParam, LPARAM lParam);
@@ -65,6 +67,7 @@ private:
 
     bool input_ctrl_pressed_;
 
+    rsc::EventListener rscEventListener_;
     MainShell shell_;
     std::wostringstream shell_log_;
 };

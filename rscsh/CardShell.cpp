@@ -14,10 +14,8 @@ std::unordered_map<std::wstring, std::wstring> const CardShell::help_map_{
 #undef X
 };
 
-void CardShell::create_context() {
-    rscContext_ = std::unique_ptr<rsc::Context>(new rsc::Context(SCARD_SCOPE_USER));
-    reset_readers();
-    reset_card();
+void CardShell::set_context(rsc::Context const &context) {
+    rscContext_ = &context;
 }
 
 void CardShell::create_readers() {
@@ -58,6 +56,7 @@ void CardShell::execute(rsc::cAPDU const &capdu) {
 }
 
 void CardShell::print_connection_info() {
+    card().fetch_status();
     execution_yield_ << "ATR: ";
     card().atr().print(execution_yield_, L" ");
     execution_yield_ << "\r\n";
@@ -85,7 +84,7 @@ void CardShell::help(std::wstring const &prefix) {
 
 void CardShell::readers(std::vector<std::wstring> const&) {
     if (!has_context())
-        create_context();
+        return;
 
     if (!has_readers()) {
         create_readers();

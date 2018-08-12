@@ -14,7 +14,7 @@ public:
     using Shell::Shell;
     using Shell::operator=;
 
-    void create_context();
+    void set_context(rsc::Context const &context);
     void create_readers();
     void create_card(LPCTSTR szReader);
 
@@ -29,11 +29,11 @@ public:
     inline bool has_readers() const noexcept { return rscReaders_ != nullptr; }
     inline bool has_card() const noexcept { return rscCard_ != nullptr; }
 
-    inline rsc::Context& context() { return *rscContext_; }
+    inline rsc::Context const& context() { return *rscContext_; }
     inline rsc::Readers& readers() { return *rscReaders_; }
     inline rsc::Card& card() { return *rscCard_; }
 
-    inline void reset_context() { rscContext_.reset(); }
+    inline void reset_context() { rscContext_ = nullptr; }
     inline void reset_readers() { rscReaders_.reset(); }
     inline void reset_card() { rscCard_.reset(); }
 
@@ -51,7 +51,7 @@ private:
     void parse_atr(scb::Bytes const &atr) const;
     void parse_atr_yield_interface_bytes(unsigned char byte, unsigned i) const;
 
-    std::unique_ptr<rsc::Context> rscContext_ = nullptr;
+    rsc::Context const *rscContext_ = nullptr;
     std::unique_ptr<rsc::Readers> rscReaders_ = nullptr;
     std::unique_ptr<rsc::Card> rscCard_ = nullptr;
 
