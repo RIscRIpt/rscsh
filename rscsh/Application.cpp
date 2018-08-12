@@ -40,7 +40,7 @@ Application::Application(HINSTANCE hInstance)
     , origInputProc_(NULL)
     , fontSize_(DEF_FONT_SIZE)
     , input_ctrl_pressed_(false)
-    , shell_(&shell_log_)
+    , shell_(shell_log_, std::bind(&Application::shell_done, this))
 {
     create_main_dialog();
 
@@ -113,6 +113,9 @@ INT_PTR Application::input_proc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     return CallWindowProc(origInputProc_, hwnd, uMsg, wParam, lParam);
 }
 
+void Application::shell_done() {
+}
+
 void Application::create_main_dialog() {
     if (CreateDialogParam(hInstance_, MAKEINTRESOURCE(IDD_MAINDIALOG), NULL, ::main_dialog_proc, (LPARAM)this) == NULL)
         throw std::system_error(GetLastError(), std::system_category());
@@ -145,30 +148,30 @@ void Application::update_main_dialog_layout() {
 
 void Application::initialize_shell() {
     try {
-        shell_.create_context();
-        shell_.create_readers();
-        if (shell_.readers().list().size() == 0) {
+        shell_.cardShell().create_context();
+        shell_.cardShell().create_readers();
+        if (shell_.cardShell().readers().list().size() == 0) {
             log("No smart card readers are present in the system.\r\n");
-        } else if (shell_.readers().list().size() == 1) {
+        } else if (shell_.cardShell().readers().list().size() == 1) {
             log("Only one reader present in the system.\r\n");
-            logf(L"Choosing reader \"%s\".\r\n", shell_.readers().list().front().c_str());
-            shell_.create_card(shell_.readers().list().front().c_str());
+            logf(L"Choosing reader \"%s\".\r\n", shell_.cardShell().readers().list().front().c_str());
+            shell_.cardShell().create_card(shell_.cardShell().readers().list().front().c_str());
         } else {
             log("Multiple readers present in the system:\r\n");
-            for (size_t i = 0; i < shell_.readers().list().size(); i++) {
-                auto const &reader = shell_.readers().list()[i];
+            for (size_t i = 0; i < shell_.cardShell().readers().list().size(); i++) {
+                auto const &reader = shell_.cardShell().readers().list()[i];
                 logf(L"    %d. \"%s\"\r\n", i, reader.c_str());
             }
             log("\r\nTrying to connect to the card in one of them ...\r\n\r\n");
-            for (auto const &reader : shell_.readers().list()) {
+            for (auto const &reader : shell_.cardShell().readers().list()) {
                 try {
                     logf(L"Trying to connect to the card in \"%s\" ...\r\n", reader.c_str());
-                    shell_.create_card(reader.c_str());
-                    shell_.card().connect();
+                    shell_.cardShell().create_card(reader.c_str());
+                    shell_.cardShell().card().connect();
                     logf("Success.\r\n");
                     break;
                 } catch (std::system_error const &e) {
-                    shell_.reset_card();
+                    shell_.cardShell().reset_card();
                     if (e.code().value() == SCARD_W_REMOVED_CARD) {
                         log("No card present in the reader.\r\n");
                     } else {
@@ -186,12 +189,10 @@ void Application::initialize_shell() {
             logf("Error: %s\r\n", e.what());
         }
     }
-    if (shell_.has_card()) {
+    if (shell_.cardShell().has_card()) {
         try {
-            shell_.card().connect();
-            shell_log_ << "ATR: ";
-            shell_.card().atr().print(shell_log_, L" ");
-            shell_log_ << "\r\n";
+            shell_.cardShell().card().connect();
+            shell_.cardShell().print_connection_info();
             log_shell();
         } catch (std::system_error const &e) {
             if (e.code().value() == SCARD_W_REMOVED_CARD) {
@@ -352,8 +353,12 @@ void Application::parse_input() {
     std::vector<wchar_t> buffer(2048);
     GetWindowText(hInput_, buffer.data(), static_cast<int>(buffer.size()));
     SetWindowText(hInput_, L"");
+    shell_execute(buffer.data());
+}
+
+void Application::shell_execute(LPCTSTR command) {
     try {
-        shell_.execute(buffer.data());
+        shell_.execute(command);
         log_shell();
     } catch (std::system_error const &e) {
         logf("Error: %s\r\n", e.what());

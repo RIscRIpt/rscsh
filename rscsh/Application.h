@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Shell.h"
+#include "MainShell.h"
 
 #include <Windows.h>
 
@@ -13,6 +13,8 @@ public:
 
     INT_PTR CALLBACK main_dialog_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
     INT_PTR CALLBACK input_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+    void shell_done();
 
     static char const *APP_NAME;
     
@@ -44,6 +46,7 @@ private:
     void clear_shell_log();
     
     void parse_input();
+    void shell_execute(LPCTSTR command);
 
     HINSTANCE hInstance_;
 
@@ -62,6 +65,6 @@ private:
 
     bool input_ctrl_pressed_;
 
-    Shell shell_;
+    MainShell shell_;
     std::wostringstream shell_log_;
 };

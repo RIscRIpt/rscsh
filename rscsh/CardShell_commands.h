@@ -1,5 +1,3 @@
-X( L"help",                  help,                  L"\r\n\t-- Display this help text." )
-X( L"exit",                  exit,                  L"\r\n\t-- Exit the program." )
 X( L"readers",               readers,               L"\r\n\t-- Lists available readers." )
 X( L"connect",               connect,               L"<id>\r\n\t-- Connects to the card in the specied reader <id>." )
 X( L"disconnect",            disconnect,            L"\r\n\t-- Disconnects from the card and reader." )

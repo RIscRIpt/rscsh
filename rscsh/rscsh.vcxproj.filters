@@ -11,6 +11,15 @@
     <Filter Include="Shell">
       <UniqueIdentifier>{4c73e299-f507-46bf-8c9b-acaa42be3128}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shell\Card">
+      <UniqueIdentifier>{97c8716b-6d65-4d15-86d5-606eefe47123}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shell\Crypto">
+      <UniqueIdentifier>{84f1d78e-173b-4d98-884c-ed108d49e343}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shell\Main">
+      <UniqueIdentifier>{2e07be6b-f9ec-4429-8c48-d50ca00d1c3d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="rscsh.rc">
@@ -24,11 +33,26 @@
     <ClInclude Include="Application.h">
       <Filter>Application</Filter>
     </ClInclude>
+    <ClInclude Include="CardShell_commands.h">
+      <Filter>Shell\Card</Filter>
+    </ClInclude>
+    <ClInclude Include="CardShell.h">
+      <Filter>Shell\Card</Filter>
+    </ClInclude>
     <ClInclude Include="Shell.h">
       <Filter>Shell</Filter>
     </ClInclude>
-    <ClInclude Include="Shell_commands.h">
-      <Filter>Shell</Filter>
+    <ClInclude Include="CryptoShell.h">
+      <Filter>Shell\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="CryptoShell_commands.h">
+      <Filter>Shell\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="MainShell.h">
+      <Filter>Shell\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="MainShell_commands.h">
+      <Filter>Shell\Main</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -36,8 +60,17 @@
     <ClCompile Include="Application.cpp">
       <Filter>Application</Filter>
     </ClCompile>
+    <ClCompile Include="CardShell.cpp">
+      <Filter>Shell\Card</Filter>
+    </ClCompile>
     <ClCompile Include="Shell.cpp">
       <Filter>Shell</Filter>
+    </ClCompile>
+    <ClCompile Include="CryptoShell.cpp">
+      <Filter>Shell\Crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="MainShell.cpp">
+      <Filter>Shell\Main</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
