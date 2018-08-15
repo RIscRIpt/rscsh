@@ -24,7 +24,8 @@ static INT_PTR CALLBACK input_proc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
     return app->input_proc(hwnd, uMsg, wParam, lParam);
 }
 
-char const *Application::APP_NAME = "rscsh " VERSION;
+wchar_t const *Application::APP_NAME = L"rscsh";
+wchar_t const *Application::APP_VERSION = L"" VERSION;
 
 int const Application::MIN_FONT_SIZE = 12;
 int const Application::DEF_FONT_SIZE = 14;
@@ -45,7 +46,8 @@ Application::Application(HINSTANCE hInstance)
 {
     create_main_dialog();
 
-    logf("%s\r\n", APP_NAME);
+    logf(L"%s %s\r\n", APP_NAME, APP_VERSION);
+    set_title(L"Disconnected");
 
     rscEventListener_.listen_new_readers(true);
 
@@ -118,9 +120,6 @@ INT_PTR Application::input_proc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     return CallWindowProc(origInputProc_, hwnd, uMsg, wParam, lParam);
 }
 
-void Application::shell_done() {
-}
-
 void Application::create_main_dialog() {
     if (CreateDialogParam(hInstance_, MAKEINTRESOURCE(IDD_MAINDIALOG), NULL, ::main_dialog_proc, (LPARAM)this) == NULL)
         throw std::system_error(GetLastError(), std::system_category());
@@ -151,6 +150,14 @@ void Application::update_main_dialog_layout() {
     SetWindowPos(hInput_, NULL, 0, rcDialog.bottom - rcDialog.top - inputHeight, rcDialog.right - rcDialog.left, inputHeight, SWP_NOZORDER);
 }
 
+void Application::set_title(std::wstring const &title) {
+    std::wstring fullTitle = std::wstring(APP_NAME) + L" | " + title;
+    SetWindowText(hMainDialog_, fullTitle.c_str());
+}
+
+void Application::shell_done() {
+}
+
 void Application::rsc_event(DWORD event, rsc::Context const &context, std::wstring const &reader) {
     try {
         shell_.cardShell().set_context(context);
@@ -163,6 +170,7 @@ void Application::rsc_event(DWORD event, rsc::Context const &context, std::wstri
                 shell_.cardShell().card().connect();
                 shell_.cardShell().print_connection_info();
                 log_shell();
+                set_title(L"Connected to " + reader);
             }
         } else if (event & SCARD_STATE_EMPTY) {
             logf(L"Smart card was disconnected from the reader \"%s\"\r\n", reader.c_str());
@@ -170,6 +178,7 @@ void Application::rsc_event(DWORD event, rsc::Context const &context, std::wstri
                 if (shell_.cardShell().card().belongs_to(reader)) {
                     shell_.cardShell().reset_card();
                 }
+                set_title(L"Disconnected");
             }
         }
     } catch (std::exception const &e) {

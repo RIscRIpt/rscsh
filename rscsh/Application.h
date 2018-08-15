@@ -16,9 +16,8 @@ public:
     INT_PTR CALLBACK main_dialog_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
     INT_PTR CALLBACK input_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    void shell_done();
-
-    static char const *APP_NAME;
+    static wchar_t const *APP_NAME;
+    static wchar_t const *APP_VERSION;
     
     static int const MIN_FONT_SIZE;
     static int const DEF_FONT_SIZE;
@@ -28,6 +27,10 @@ private:
     void create_main_dialog();
     void initialize_main_dialog();
     void update_main_dialog_layout();
+
+    void set_title(std::wstring const &title);
+
+    void shell_done();
 
     void rsc_event(DWORD event, rsc::Context const &context, std::wstring const &reader);
 
