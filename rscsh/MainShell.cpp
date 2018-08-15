@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <thread>
 
+#include "version.ver"
+
 std::unordered_map<std::wstring, void (MainShell::*)(std::vector<std::wstring> const &)> const MainShell::command_map_{
 #define X(name, func, _) { name, &MainShell::func },
 #include "MainShell_commands.h"
@@ -70,4 +72,8 @@ void MainShell::help(std::vector<std::wstring> const&) {
 
 void MainShell::exit(std::vector<std::wstring> const&) {
     PostQuitMessage(0);
+}
+
+void MainShell::version(std::vector<std::wstring> const&) {
+    execution_yield_ << VERSION << "\r\n";
 }

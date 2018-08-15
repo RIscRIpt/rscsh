@@ -24,6 +24,7 @@ public:
 private:
     void help(std::vector<std::wstring> const&);
     void exit(std::vector<std::wstring> const&);
+    void version(std::vector<std::wstring> const&);
 
     FunctionEnd end_;
 
