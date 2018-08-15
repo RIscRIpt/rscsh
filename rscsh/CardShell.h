@@ -16,7 +16,7 @@ public:
 
     void set_context(rsc::Context const &context);
     void create_readers();
-    void create_card(LPCTSTR szReader);
+    void create_card_and_connect(LPCTSTR szReader);
 
     void help(std::wstring const &prefix);
 
@@ -25,7 +25,8 @@ public:
 
     void print_connection_info();
 
-    inline bool has_context() const noexcept { return rscContext_ != nullptr; }
+    inline bool context_established() const noexcept { return rscContext_ ? rscContext_->established() : false; }
+
     inline bool has_readers() const noexcept { return rscReaders_ != nullptr; }
     inline bool has_card() const noexcept { return rscCard_ != nullptr; }
 
@@ -38,6 +39,8 @@ public:
     inline void reset_card() { rscCard_.reset(); }
 
 private:
+    void validate_context() const;
+
     void readers(std::vector<std::wstring> const&);
     void connect(std::vector<std::wstring> const &argv);
     void disconnect(std::vector<std::wstring> const&);

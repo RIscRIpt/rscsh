@@ -23,7 +23,7 @@ void CardShell::create_readers() {
     reset_card();
 }
 
-void CardShell::create_card(LPCTSTR szReader) {
+void CardShell::create_card_and_connect(LPCTSTR szReader) {
     rscCard_ = std::make_unique<rsc::Card>(*rscContext_, szReader);
 }
 
@@ -82,9 +82,13 @@ void CardShell::help(std::wstring const &prefix) {
     execution_yield_ << "\r\n";
 }
 
+void CardShell::validate_context() const {
+    if (!context_established())
+        throw std::runtime_error("Smart card context is not established. Most likely there are no readers connected to this PC.");
+}
+
 void CardShell::readers(std::vector<std::wstring> const&) {
-    if (!has_context())
-        return;
+    validate_context();
 
     if (!has_readers()) {
         create_readers();
@@ -101,6 +105,8 @@ void CardShell::readers(std::vector<std::wstring> const&) {
 }
 
 void CardShell::connect(std::vector<std::wstring> const &argv) {
+    validate_context();
+
     if (argv.size() != 2) {
         execution_yield_ << "connect <reader id/name>\r\n";
         return;
@@ -109,15 +115,10 @@ void CardShell::connect(std::vector<std::wstring> const &argv) {
     auto &reader = argv[1];
     auto reader_id = _wtoi(reader.c_str());
 
-    if (reader_id == 0) {
-        create_card(reader.c_str());
-    } else {
-        reader_id--; // input is 1-based
-        if (reader_id < 0 || reader_id >= readers().list().size())
-            throw std::runtime_error("invalid reader id");
-        create_card(readers().list()[reader_id].c_str());
-    }
-    card().connect();
+    reader_id--; // input is 1-based
+    if (reader_id < 0 || reader_id >= readers().list().size())
+        throw std::runtime_error("invalid reader id");
+    create_card_and_connect(readers().list()[reader_id].c_str());
 
     print_connection_info();
 }
@@ -126,10 +127,14 @@ void CardShell::disconnect(std::vector<std::wstring> const&) {
     if (has_card()) {
         card().disconnect();
         reset_card();
+    } else {
+        execution_yield_ << "Not connected to any card\r\n";
     }
 }
 
 void CardShell::reset(std::vector<std::wstring> const &argv) {
+    validate_context();
+
     if (!has_card())
         return;
 

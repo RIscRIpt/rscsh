@@ -49,6 +49,7 @@ Application::Application(HINSTANCE hInstance)
     logf(L"%s %s\r\n", APP_NAME, APP_VERSION);
     set_title(L"Disconnected");
 
+    shell_.cardShell().set_context(rscEventListener_.context());
     rscEventListener_.listen_new_readers(true);
 
     using namespace std::placeholders;
@@ -160,25 +161,25 @@ void Application::shell_done() {
 
 void Application::rsc_event(DWORD event, rsc::Context const &context, std::wstring const &reader) {
     try {
-        shell_.cardShell().set_context(context);
         if (event & SCARD_STATE_PRESENT) {
             logf(L"Smart card was connected to the reader \"%s\"\r\n", reader.c_str());
             if (!shell_.cardShell().has_card()) {
                 logf(L"Connecting ...\r\n");
                 Sleep(1000);
-                shell_.cardShell().create_card(reader.c_str());
-                shell_.cardShell().card().connect();
+                shell_.cardShell().create_card_and_connect(reader.c_str());
                 shell_.cardShell().print_connection_info();
                 log_shell();
                 set_title(L"Connected to " + reader);
+            } else {
+                logf(L"Not connecting because other connection outstanding.\r\n");
             }
         } else if (event & SCARD_STATE_EMPTY) {
             logf(L"Smart card was disconnected from the reader \"%s\"\r\n", reader.c_str());
             if (shell_.cardShell().has_card()) {
                 if (shell_.cardShell().card().belongs_to(reader)) {
                     shell_.cardShell().reset_card();
+                    set_title(L"Disconnected");
                 }
-                set_title(L"Disconnected");
             }
         }
     } catch (std::exception const &e) {
