@@ -252,6 +252,7 @@ bool Application::input_proc_keyup(WPARAM wParam, LPARAM lParam) {
 
 void Application::input_proc_text_changed() {
     std::vector<wchar_t> buffer(2048);
+
     auto actualSize = GetWindowText(hInput_, buffer.data(), static_cast<int>(buffer.size()));
     buffer.resize(actualSize + 1);
 
@@ -370,12 +371,17 @@ void Application::clear_shell_log() {
 
 void Application::process_input() {
     std::vector<wchar_t> buffer(2048);
-    GetWindowText(hInput_, buffer.data(), static_cast<int>(buffer.size()));
+
+    auto actualLength = GetWindowText(hInput_, buffer.data(), static_cast<int>(buffer.size()));
+    buffer.resize(actualLength + 1);
+
     SetWindowText(hInput_, L"");
-    if (inputHistory_.empty() || inputHistory_.back() != buffer.data()) {
+
+    if (buffer.size() > 1 && (inputHistory_.empty() || inputHistory_.back() != buffer.data())) {
         inputHistory_.emplace_back(buffer.data());
         selectedInput_ = inputHistory_.end();
     }
+
     shell_execute(buffer.data());
 }
 
