@@ -27,6 +27,8 @@ MainShell::MainShell(std::wostringstream &execution_yield, FunctionEnd const &en
 {}
 
 void MainShell::execute(LPCTSTR args) {
+    execution_yield_ << args << "\r\n";
+
     std::wistringstream cmd_stream(args);
     std::vector<std::wstring> argv{
         std::istream_iterator<std::wstring, wchar_t>(cmd_stream),
