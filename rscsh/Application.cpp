@@ -54,6 +54,7 @@ Application::Application(HINSTANCE hInstance)
 
     using namespace std::placeholders;
     rscEventListener_.start(SCARD_STATE_EMPTY | SCARD_STATE_PRESENT, std::bind(&Application::rsc_event, this, _1, _2, _3));
+    shell_.card_shell().set_on_connection_changed_callback(std::bind(&Application::card_shell_connection_changed, this, _1));
 }
 
 Application::~Application() {
@@ -169,7 +170,6 @@ void Application::rsc_event(DWORD event, rsc::Context const &context, std::wstri
                 shell_.card_shell().create_card_and_connect(reader.c_str());
                 shell_.card_shell().print_connection_info();
                 log_shell();
-                set_title(L"Connected to " + reader);
             } else {
                 logf(L"Not connecting because other connection outstanding.\r\n");
             }
@@ -178,12 +178,19 @@ void Application::rsc_event(DWORD event, rsc::Context const &context, std::wstri
             if (shell_.card_shell().has_card()) {
                 if (shell_.card_shell().card().belongs_to(reader)) {
                     shell_.card_shell().reset_card();
-                    set_title(L"Disconnected");
                 }
             }
         }
     } catch (std::exception const &e) {
         logf("Error: %s\r\n", e.what());
+    }
+}
+
+void Application::card_shell_connection_changed(std::wstring const &reader) {
+    if (!reader.empty()) {
+        set_title(L"Connected to " + reader);
+    } else {
+        set_title(L"Disconnected");
     }
 }
 

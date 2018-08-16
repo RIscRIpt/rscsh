@@ -33,6 +33,7 @@ private:
     void shell_done();
 
     void rsc_event(DWORD event, rsc::Context const &context, std::wstring const &reader);
+    void card_shell_connection_changed(std::wstring const &reader);
 
     bool input_proc_char(WPARAM wParam, LPARAM lParam);
     bool input_proc_keydown(WPARAM wParam, LPARAM lParam);

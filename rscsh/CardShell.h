@@ -6,11 +6,14 @@
 #include <rsc/Context.h>
 #include <rsc/Card.h>
 
+#include <functional>
 #include <memory>
 #include <unordered_map>
 
 class CardShell : public Shell {
 public:
+    using ConnectionChangedCb = std::function<void(std::wstring const &reader)>;
+
     using Shell::Shell;
     using Shell::operator=;
 
@@ -27,6 +30,8 @@ public:
 
     void print_connection_info();
 
+    void set_on_connection_changed_callback(ConnectionChangedCb callback);
+
     inline bool context_established() const noexcept { return rscContext_ ? rscContext_->established() : false; }
 
     inline bool has_readers() const noexcept { return rscReaders_ != nullptr; }
@@ -38,7 +43,7 @@ public:
 
     inline void reset_context() { rscContext_ = nullptr; }
     inline void reset_readers() { rscReaders_.reset(); }
-    inline void reset_card() { rscCard_.reset(); }
+    void reset_card();
 
 private:
     void validate_context() const;
@@ -62,6 +67,8 @@ private:
     rsc::Context const *rscContext_ = nullptr;
     std::unique_ptr<rsc::Readers> rscReaders_ = nullptr;
     std::unique_ptr<rsc::Card> rscCard_ = nullptr;
+
+    ConnectionChangedCb connectionChangedCb_;
 
     rsc::rAPDU last_rapdu_;
 

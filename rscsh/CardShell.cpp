@@ -20,11 +20,12 @@ void CardShell::set_context(rsc::Context const &context) {
 
 void CardShell::create_readers() {
     rscReaders_ = std::make_unique<rsc::Readers>(*rscContext_, static_cast<LPCTSTR>(NULL));
-    reset_card();
 }
 
 void CardShell::create_card_and_connect(LPCTSTR szReader) {
     rscCard_ = std::make_unique<rsc::Card>(*rscContext_, szReader);
+    if (connectionChangedCb_)
+        connectionChangedCb_(szReader);
 }
 
 void CardShell::execute(std::vector<std::wstring> const &argv) {
@@ -76,6 +77,16 @@ void CardShell::print_connection_info() {
     execution_yield_ << "\r\n";
 }
 
+void CardShell::set_on_connection_changed_callback(ConnectionChangedCb callback) {
+    connectionChangedCb_ = callback;
+}
+
+void CardShell::reset_card() {
+    rscCard_.reset();
+    if (connectionChangedCb_)
+        connectionChangedCb_(L"");
+}
+
 void CardShell::help(std::wstring const &prefix) {
     for (auto const& [cmd, help] : help_map_) {
         execution_yield_ << "\r\n" << prefix << ' ' << cmd << ' ' << help << "\r\n";
@@ -111,6 +122,12 @@ void CardShell::connect(std::vector<std::wstring> const &argv) {
     if (argv.size() != 2) {
         execution_yield_ << "connect <reader id/name>\r\n";
         return;
+    }
+
+    if (!has_readers()) {
+        create_readers();
+    } else {
+        readers().fetch();
     }
 
     auto &reader = argv[1];
