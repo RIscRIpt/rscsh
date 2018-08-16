@@ -83,13 +83,6 @@ void CryptoShell::sha(std::vector<std::wstring> const &argv) {
             goto usage;
     }
 
-    execution_yield_
-        << argv[0] << ' '
-        << argv[1] << ' '
-        << argv[2] << ' '
-        << "hex ";
-    buffer.print(execution_yield_, L" ");
-    execution_yield_ << "\r\n";
     result.print(execution_yield_, L"");
     execution_yield_ << "\r\n";
 }
@@ -116,15 +109,6 @@ void CryptoShell::rsa(std::vector<std::wstring> const &argv) {
     scc::RSA rsa(modulus, exponent);
     result = rsa.transorm(buffer);
 
-    execution_yield_
-        << argv[0] << ' '
-        << argv[1] << ' ';
-    modulus.print(execution_yield_, L"");
-    execution_yield_ << ' ';
-    exponent.print(execution_yield_, L"");
-    execution_yield_ << " hex ";
-    buffer.print(execution_yield_, L" ");
-    execution_yield_ << "\r\n";
     result.print(execution_yield_, L"");
     execution_yield_ << "\r\n";
 }
@@ -184,22 +168,6 @@ void CryptoShell::des(std::vector<std::wstring> const &argv) {
         result = DES.crypt1(buffer, operation, iv);
     }
 
-        //execution_yield_ << "crypto des [decrypt / encrypt] [cbc <iv> / ecb] <key> <hex/ascii> {buffer}\r\n";
-
-    execution_yield_
-        << argv[0] << ' '
-        << argv[1] << ' '
-        << argv[2] << ' '
-        << argv[3] << ' ';
-    if (mode == scc::DES::CBC) {
-        iv.print(execution_yield_, L"");
-        execution_yield_ << ' ';
-    }
-    key.print(execution_yield_, L"");
-    execution_yield_ << " hex ";
-    buffer.print(execution_yield_, L" ");
-
-    execution_yield_ << "\r\n";
     result.print(execution_yield_, L"");
     execution_yield_ << "\r\n";
 }
