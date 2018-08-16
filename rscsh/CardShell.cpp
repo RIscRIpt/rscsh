@@ -31,28 +31,29 @@ void CardShell::execute(std::vector<std::wstring> const &argv) {
     if (auto cmd = command_map_.find(argv[0]); cmd != command_map_.end()) {
         (this->*cmd->second)(argv);
     } else {
-        scb::Bytes bytes;
-        for (auto const &arg : argv)
-            bytes += arg;
-        execute(rsc::cAPDU(bytes));
+        execution_yield_ << "Unknown card shell command\r\n";
     }
 }
 
 void CardShell::execute(rsc::cAPDU const &capdu) {
-    if (!has_card())
-        throw std::runtime_error("cannot execute cAPDU, no card present");
-
-    last_rapdu_ = rscCard_->raw_transmit(capdu);
-    execution_yield_ << "< ";
-    capdu.buffer().print(execution_yield_, L" ");
-    execution_yield_ << "\r\n> ";
-    last_rapdu_.buffer().print(execution_yield_, L" ");
-    execution_yield_ << "\r\n";
+    transmit(capdu.buffer());
     if (last_rapdu_.SW().response_bytes_still_available()) {
         execute(rsc::cAPDU::GET_RESPONSE(last_rapdu_.SW().response_bytes_still_available()));
     } else if (last_rapdu_.SW().wrong_length()) {
         execute(rsc::cAPDU::FIX_LENGTH(capdu, last_rapdu_.SW2()));
     }
+}
+
+void CardShell::transmit(scb::Bytes const &buffer) {
+    if (!has_card())
+        throw std::runtime_error("cannot execute cAPDU, no card present");
+
+    last_rapdu_ = rscCard_->raw_transmit(buffer);
+    execution_yield_ << "< ";
+    buffer.print(execution_yield_, L" ");
+    execution_yield_ << "\r\n> ";
+    last_rapdu_.buffer().print(execution_yield_, L" ");
+    execution_yield_ << "\r\n";
 }
 
 void CardShell::print_connection_info() {
@@ -195,6 +196,20 @@ void CardShell::parse(std::vector<std::wstring> const &argv) {
         }
         parse(bytes);
     }
+}
+
+void CardShell::raw(std::vector<std::wstring> const &argv) {
+    scb::Bytes bytes;
+    for (auto arg = argv.begin() + 1; arg != argv.end(); ++arg)
+        bytes += *arg;
+    transmit(bytes);
+}
+
+void CardShell::apdu(std::vector<std::wstring> const &argv) {
+    scb::Bytes bytes;
+    for (auto arg = argv.begin() + 1; arg != argv.end(); ++arg)
+        bytes += *arg;
+    execute(rsc::cAPDU(bytes));
 }
 
 void CardShell::select(std::vector<std::wstring> const &argv) {

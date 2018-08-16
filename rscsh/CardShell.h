@@ -23,6 +23,8 @@ public:
     void execute(std::vector<std::wstring> const &argv);
     void execute(rsc::cAPDU const &capdu);
 
+    void transmit(scb::Bytes const &buffer);
+
     void print_connection_info();
 
     inline bool context_established() const noexcept { return rscContext_ ? rscContext_->established() : false; }
@@ -47,6 +49,9 @@ private:
     void reset(std::vector<std::wstring> const &argv);
     void dump(std::vector<std::wstring> const &argv);
     void parse(std::vector<std::wstring> const &argv);
+
+    void raw(std::vector<std::wstring> const &argv);
+    void apdu(std::vector<std::wstring> const &argv);
 
     void select(std::vector<std::wstring> const &argv);
 
