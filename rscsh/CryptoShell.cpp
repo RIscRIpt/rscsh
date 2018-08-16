@@ -113,6 +113,27 @@ void CryptoShell::rsa(std::vector<std::wstring> const &argv) {
     execution_yield_ << "\r\n";
 }
 
+void CryptoShell::rsa_keygen(std::vector<std::wstring> const &argv) {
+    if (argv.size() < 4) {
+    usage:
+        execution_yield_ << "crypto rsa-keygen <bits> <public exponent>\r\n";
+        return;
+    }
+
+    unsigned bits = std::stoi(argv[2]);
+    auto exponent = to_bytes(scb::Bytes::Hex, argv.begin() + 3, argv.end());
+
+    scc::RSA rsa(bits, exponent);
+
+    execution_yield_ << "Modulus: ";
+    rsa.get_modulus().print(execution_yield_, L"");
+    execution_yield_ << "\r\nPublic Exponent: ";
+    rsa.get_public_exponent().print(execution_yield_, L"");
+    execution_yield_ << "\r\nPrivate Exponent: ";
+    rsa.get_private_exponent().print(execution_yield_, L"");
+    execution_yield_ << "\r\n";
+}
+
 void CryptoShell::des(std::vector<std::wstring> const &argv) {
     if (argv.size() < 5) {
     usage:

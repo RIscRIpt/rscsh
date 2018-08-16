@@ -21,6 +21,7 @@ private:
 
     void sha(std::vector<std::wstring> const &argv);
     void rsa(std::vector<std::wstring> const &argv);
+    void rsa_keygen(std::vector<std::wstring> const &argv);
     void des(std::vector<std::wstring> const &argv);
 
     static const std::unordered_map<std::wstring, void (CryptoShell::*)(std::vector<std::wstring> const &)> command_map_;
