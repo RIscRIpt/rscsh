@@ -33,7 +33,7 @@ void CryptoShell::execute(std::vector<std::wstring> const &argv) {
     if (auto cmd = command_map_.find(argv[1]); cmd != command_map_.end()) {
         (this->*cmd->second)(argv);
     } else {
-        execution_yield_ << "Unknown crypto command\r\n";
+        execution_yield_ << "Unknown crypto shell command\r\n";
     }
 }
 
