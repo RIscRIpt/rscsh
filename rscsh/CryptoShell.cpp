@@ -191,3 +191,23 @@ void CryptoShell::des(std::vector<std::wstring> const &argv) {
     result.print(execution_yield_, L"");
     execution_yield_ << "\r\n";
 }
+
+void CryptoShell::des_kcv(std::vector<std::wstring> const &argv) {
+    if (argv.size() < 3) {
+        execution_yield_ << "crypto des-kcv <key>\r\n";
+        return;
+    }
+
+    scb::Bytes zeros(8);
+    scb::Bytes kcv;
+    auto key = to_bytes(scb::Bytes::Hex, argv.begin() + 2, argv.end());
+    scc::DES DES(key);
+    if (DES.key.size() > 8) {
+        kcv = DES.crypt3(zeros, scc::DES::Encrypt, {});
+    } else {
+        kcv = DES.crypt1(zeros, scc::DES::Encrypt, {});
+    }
+
+    kcv.left(3).print(execution_yield_, L"");
+    execution_yield_ << "\r\n";
+}

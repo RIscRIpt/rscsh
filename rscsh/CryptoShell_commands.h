@@ -2,3 +2,4 @@ X( L"sha",               sha,               L"[1/224/256/384/512] <hex/ascii> {b
 X( L"rsa",               rsa,               L"<modulus> <exponent> <hex/ascii> {buffer}\r\n\t-- Make RSA transofrmation of specified buffer." )
 X( L"rsa-keygen",        rsa_keygen,        L"<bits> <public exponent>\r\n\t-- Generate RSA public-private key pair." )
 X( L"des",               des,               L"[decrypt / encrypt] [cbc <iv> / ecb] <key> <hex/ascii> {buffer}\r\n\t-- Decrypt / encrypt buffer using DES algorithm." )
+X( L"des-kcv",           des_kcv,           L"<key>\r\n\t-- Get KCV of the specified key." )
