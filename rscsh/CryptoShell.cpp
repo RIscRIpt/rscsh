@@ -115,7 +115,6 @@ void CryptoShell::rsa(std::vector<std::wstring> const &argv) {
 
 void CryptoShell::rsa_keygen(std::vector<std::wstring> const &argv) {
     if (argv.size() < 4) {
-    usage:
         execution_yield_ << "crypto rsa-keygen <bits> <public exponent>\r\n";
         return;
     }
