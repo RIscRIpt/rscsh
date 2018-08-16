@@ -53,8 +53,10 @@ private:
     void log_shell();
     void clear_shell_log();
     
-    void parse_input();
+    void process_input();
     void shell_execute(LPCTSTR command);
+
+    void select_input_history_entry(int offset);
 
     HINSTANCE hInstance_;
 
@@ -73,6 +75,9 @@ private:
     int fontSize_;
 
     bool input_ctrl_pressed_;
+
+    std::vector<std::wstring> inputHistory_;
+    std::vector<std::wstring>::iterator selectedInput_;
 
     rsc::EventListener rscEventListener_;
     MainShell shell_;

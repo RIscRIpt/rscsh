@@ -38,10 +38,12 @@ Application::Application(HINSTANCE hInstance)
     , hMainDialog_(NULL)
     , hOutput_(NULL)
     , hInput_(NULL)
+    , hSymbols_(NULL)
+    , hIcon_(NULL)
     , origInputProc_(NULL)
     , fontSize_(DEF_FONT_SIZE)
     , input_ctrl_pressed_(false)
-    , rscEventListener_()
+    , selectedInput_(inputHistory_.end())
     , shell_(shell_log_, std::bind(&Application::shell_done, this))
 {
     create_main_dialog();
@@ -210,7 +212,7 @@ void Application::card_shell_connection_changed(std::wstring const &reader) {
 bool Application::input_proc_char(WPARAM wParam, LPARAM lParam) {
     switch (wParam) {
         case VK_RETURN:
-            parse_input();
+            process_input();
             return true;
         case VK_LBUTTON:
             return true;
@@ -229,6 +231,12 @@ bool Application::input_proc_keydown(WPARAM wParam, LPARAM lParam) {
                 return true;
             }
             break;
+        case VK_DOWN:
+            select_input_history_entry(+1);
+            return true;
+        case VK_UP:
+            select_input_history_entry(-1);
+            return true;
     }
     return false;
 }
@@ -360,10 +368,14 @@ void Application::clear_shell_log() {
     shell_log_.clear();
 }
 
-void Application::parse_input() {
+void Application::process_input() {
     std::vector<wchar_t> buffer(2048);
     GetWindowText(hInput_, buffer.data(), static_cast<int>(buffer.size()));
     SetWindowText(hInput_, L"");
+    if (inputHistory_.empty() || inputHistory_.back() != buffer.data()) {
+        inputHistory_.emplace_back(buffer.data());
+        selectedInput_ = inputHistory_.end();
+    }
     shell_execute(buffer.data());
 }
 
@@ -377,5 +389,24 @@ void Application::shell_execute(LPCTSTR command) {
     } catch (std::exception const &e) {
         log_shell();
         logf("Error: %s\r\n", e.what());
+    }
+}
+
+void Application::select_input_history_entry(int offset) {
+    if (inputHistory_.empty())
+        return;
+
+    selectedInput_ += offset;
+
+    while (selectedInput_ < inputHistory_.begin())
+        selectedInput_ += inputHistory_.end() - inputHistory_.begin() + 1;
+    while (selectedInput_ > inputHistory_.end())
+        selectedInput_ -= inputHistory_.end() - inputHistory_.begin() + 1;
+
+    if (selectedInput_ != inputHistory_.end()) {
+        SetWindowText(hInput_, selectedInput_->c_str());
+        SendMessage(hInput_, EM_SETSEL, selectedInput_->size(), selectedInput_->size());
+    } else {
+        SetWindowText(hInput_, L"");
     }
 }
