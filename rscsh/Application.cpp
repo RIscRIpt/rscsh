@@ -48,6 +48,7 @@ Application::Application(HINSTANCE hInstance)
 
     logf(L"%s %s\r\n", APP_NAME, APP_VERSION);
     set_title(L"Disconnected");
+    set_symbols(0, 0);
 
     shell_.card_shell().set_context(rscEventListener_.context());
     rscEventListener_.listen_new_readers(true);
@@ -106,6 +107,8 @@ INT_PTR Application::main_dialog_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 
 INT_PTR Application::input_proc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
+        case WM_GETTEXTLENGTH:
+            input_proc_text_changed();
         case WM_CHAR:
             if (input_proc_char(wParam, lParam))
                 return FALSE;
@@ -130,6 +133,7 @@ void Application::create_main_dialog() {
 void Application::initialize_main_dialog() {
     hInput_ = GetDlgItem(hMainDialog_, IDC_INPUT);
     hOutput_ = GetDlgItem(hMainDialog_, IDC_OUTPUT);
+    hSymbols_ = GetDlgItem(hMainDialog_, IDC_SYMBOLS);
 
     SetWindowLongPtr(hInput_, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
     origInputProc_ = reinterpret_cast<WNDPROC>(SetWindowLongPtr(hInput_, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(::input_proc)));
@@ -144,17 +148,26 @@ void Application::initialize_main_dialog() {
 
 void Application::update_main_dialog_layout() {
     const int inputHeight = fontSize_ + 8;
+    const int symbolsWidth = inputHeight * 2;
+
     RECT rcDialog;
 
     GetClientRect(hMainDialog_, &rcDialog);
 
     SetWindowPos(hOutput_, NULL, 0, 0, rcDialog.right - rcDialog.left, rcDialog.bottom - rcDialog.top - inputHeight, SWP_NOZORDER);
-    SetWindowPos(hInput_, NULL, 0, rcDialog.bottom - rcDialog.top - inputHeight, rcDialog.right - rcDialog.left, inputHeight, SWP_NOZORDER);
+    SetWindowPos(hInput_, NULL, 0, rcDialog.bottom - rcDialog.top - inputHeight, rcDialog.right - rcDialog.left - symbolsWidth, inputHeight, SWP_NOZORDER);
+    SetWindowPos(hSymbols_, NULL, rcDialog.right - symbolsWidth, rcDialog.bottom - rcDialog.top - inputHeight, symbolsWidth, inputHeight, SWP_NOZORDER);
 }
 
 void Application::set_title(std::wstring const &title) {
     std::wstring fullTitle = std::wstring(APP_NAME) + L" | " + title;
     SetWindowText(hMainDialog_, fullTitle.c_str());
+}
+
+void Application::set_symbols(size_t total, size_t noSpace) {
+    std::wstringstream ss;
+    ss << total << '/' << noSpace;
+    SetWindowText(hSymbols_, ss.str().c_str());
 }
 
 void Application::shell_done() {
@@ -227,6 +240,20 @@ bool Application::input_proc_keyup(WPARAM wParam, LPARAM lParam) {
             return true;
     }
     return false;
+}
+
+void Application::input_proc_text_changed() {
+    std::vector<wchar_t> buffer(2048);
+    auto actualSize = GetWindowText(hInput_, buffer.data(), static_cast<int>(buffer.size()));
+    buffer.resize(actualSize + 1);
+
+    size_t total = buffer.size() - 1;
+    size_t noSpace = total;
+    if (auto it = std::find(buffer.rbegin(), buffer.rend(), ' '); it != buffer.rend()) {
+        noSpace = buffer.end() - it.base() - 1;
+    }
+
+    set_symbols(total, noSpace);
 }
 
 HFONT Application::create_font(int size) {

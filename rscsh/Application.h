@@ -29,6 +29,7 @@ private:
     void update_main_dialog_layout();
 
     void set_title(std::wstring const &title);
+    void set_symbols(size_t total, size_t noSpace);
 
     void shell_done();
 
@@ -38,6 +39,7 @@ private:
     bool input_proc_char(WPARAM wParam, LPARAM lParam);
     bool input_proc_keydown(WPARAM wParam, LPARAM lParam);
     bool input_proc_keyup(WPARAM wParam, LPARAM lParam);
+    void input_proc_text_changed();
 
     HFONT create_font(int size);
     void change_font_size(int delta);
@@ -62,6 +64,7 @@ private:
     HWND hMainDialog_;
     HWND hOutput_;
     HWND hInput_;
+    HWND hSymbols_;
 
     HICON hIcon_;
 
