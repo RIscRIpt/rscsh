@@ -3,6 +3,7 @@
 #include <scb/Bytes.h>
 #include <scc/Hash.h>
 #include <scc/RSA.h>
+#include <scc/DES.h>
 
 std::unordered_map<std::wstring, void (CryptoShell::*)(std::vector<std::wstring> const &)> const CryptoShell::command_map_{
 #define X(name, func, _) { name, &CryptoShell::func },
@@ -123,6 +124,81 @@ void CryptoShell::rsa(std::vector<std::wstring> const &argv) {
     exponent.print(execution_yield_, L"");
     execution_yield_ << " hex ";
     buffer.print(execution_yield_, L" ");
+    execution_yield_ << "\r\n";
+    result.print(execution_yield_, L"");
+    execution_yield_ << "\r\n";
+}
+
+void CryptoShell::des(std::vector<std::wstring> const &argv) {
+    if (argv.size() < 5) {
+    usage:
+        execution_yield_ << "crypto des [decrypt / encrypt] [cbc <iv> / ecb] <key> <hex/ascii> {buffer}\r\n";
+        return;
+    }
+
+    auto nextArg = argv.begin() + 2;
+
+    scc::DES::Operation operation;
+    auto const &szOperation = *nextArg++;
+    if (szOperation == L"decrypt")
+        operation = scc::DES::Decrypt;
+    else if (szOperation == L"encrypt")
+        operation = scc::DES::Encrypt;
+    else
+        goto usage;
+
+    scb::Bytes iv;
+
+    scc::DES::Mode mode;
+    auto const &szMode = *nextArg++;
+    if (szMode == L"cbc") {
+        mode = scc::DES::CBC;
+        iv = to_bytes(scb::Bytes::Hex, nextArg, nextArg + 1);
+        ++nextArg;
+    } else if (szMode == L"ecb") {
+        mode = scc::DES::ECB;
+    } else {
+        goto usage;
+    }
+
+    auto key = to_bytes(scb::Bytes::Hex, nextArg, nextArg + 1);
+    ++nextArg;
+
+    scb::Bytes buffer;
+
+    if (*nextArg == L"hex") {
+        ++nextArg;
+        buffer = to_bytes(scb::Bytes::Hex, nextArg, argv.end());
+    } else if (*nextArg == L"ascii") {
+        ++nextArg;
+        buffer = to_bytes(scb::Bytes::Raw, nextArg, argv.end());
+    } else {
+        goto usage;
+    }
+
+    scb::Bytes result;
+    scc::DES DES(key);
+    if (DES.key.size() > 8) {
+        result = DES.crypt3(buffer, operation, iv);
+    } else {
+        result = DES.crypt1(buffer, operation, iv);
+    }
+
+        //execution_yield_ << "crypto des [decrypt / encrypt] [cbc <iv> / ecb] <key> <hex/ascii> {buffer}\r\n";
+
+    execution_yield_
+        << argv[0] << ' '
+        << argv[1] << ' '
+        << argv[2] << ' '
+        << argv[3] << ' ';
+    if (mode == scc::DES::CBC) {
+        iv.print(execution_yield_, L"");
+        execution_yield_ << ' ';
+    }
+    key.print(execution_yield_, L"");
+    execution_yield_ << " hex ";
+    buffer.print(execution_yield_, L" ");
+
     execution_yield_ << "\r\n";
     result.print(execution_yield_, L"");
     execution_yield_ << "\r\n";
