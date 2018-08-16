@@ -372,8 +372,10 @@ void Application::shell_execute(LPCTSTR command) {
         shell_.execute(command);
         log_shell();
     } catch (std::system_error const &e) {
+        log_shell();
         logf("Error: %s\r\n", e.what());
     } catch (std::exception const &e) {
+        log_shell();
         logf("Error: %s\r\n", e.what());
     }
 }
