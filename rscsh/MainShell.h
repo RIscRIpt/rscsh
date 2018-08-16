@@ -18,8 +18,8 @@ public:
     void execute(LPCTSTR args);
     void execute(std::vector<std::wstring> const argv);
 
-    inline CardShell& cardShell() noexcept { return cardShell_; }
-    inline CryptoShell& cryptoShell() noexcept { return cryptoShell_; }
+    inline CardShell& card_shell() noexcept { return cardShell_; }
+    inline CryptoShell& crypto_shell() noexcept { return cryptoShell_; }
 
 private:
     void help(std::vector<std::wstring> const&);
