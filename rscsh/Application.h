@@ -60,8 +60,7 @@ private:
 
     HINSTANCE hInstance_;
 
-    HFONT hOutputFont_;
-    HFONT hInputFont_;
+    HFONT hFont_;
 
     HWND hMainDialog_;
     HWND hOutput_;

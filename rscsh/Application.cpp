@@ -33,8 +33,7 @@ int const Application::MAX_FONT_SIZE = 36;
 
 Application::Application(HINSTANCE hInstance)
     : hInstance_(hInstance)
-    , hOutputFont_(NULL)
-    , hInputFont_(NULL)
+    , hFont_(NULL)
     , hMainDialog_(NULL)
     , hOutput_(NULL)
     , hInput_(NULL)
@@ -61,10 +60,8 @@ Application::Application(HINSTANCE hInstance)
 }
 
 Application::~Application() {
-    if (hOutputFont_)
-        DeleteObject(hOutputFont_);
-    if (hInputFont_)
-        DeleteObject(hInputFont_);
+    if (hFont_)
+        DeleteObject(hFont_);
     rscEventListener_.stop();
 }
 
@@ -150,7 +147,7 @@ void Application::initialize_main_dialog() {
 
 void Application::update_main_dialog_layout() {
     const int inputHeight = fontSize_ + 8;
-    const int symbolsWidth = inputHeight * 2;
+    const int symbolsWidth = inputHeight * 3;
 
     RECT rcDialog;
 
@@ -292,27 +289,16 @@ void Application::change_font_size(int delta) {
     else if (fontSize_ > MAX_FONT_SIZE)
         fontSize_ = MAX_FONT_SIZE;
 
-    if (hOutputFont_)
-        DeleteObject(hOutputFont_);
-    if (hInputFont_)
-        DeleteObject(hInputFont_);
+    if (hFont_)
+        DeleteObject(hFont_);
 
-    hInputFont_ = create_font(fontSize_);
-    hOutputFont_ = create_font(fontSize_);
+    hFont_ = create_font(fontSize_);
 
-    SendMessage(hInput_, WM_SETFONT, reinterpret_cast<WPARAM>(hInputFont_), TRUE);
-    SendMessage(hOutput_, WM_SETFONT, reinterpret_cast<WPARAM>(hOutputFont_), TRUE);
+    SendMessage(hInput_, WM_SETFONT, reinterpret_cast<WPARAM>(hFont_), TRUE);
+    SendMessage(hOutput_, WM_SETFONT, reinterpret_cast<WPARAM>(hFont_), TRUE);
+    SendMessage(hSymbols_, WM_SETFONT, reinterpret_cast<WPARAM>(hFont_), TRUE);
 
     update_main_dialog_layout();
-
-    /*
-    auto currentStyle = GetWindowLongPtr(hInput_, GWL_STYLE);
-    if (fontSize_ == MIN_FONT_SIZE) {
-        SetWindowLongPtr(hInput_, GWL_STYLE, currentStyle | ES_UPPERCASE);
-    } else {
-        SetWindowLongPtr(hInput_, GWL_STYLE, currentStyle & ~ES_UPPERCASE);
-    }
-    */
 }
 
 void Application::log(char const *message) {
