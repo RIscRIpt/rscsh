@@ -47,7 +47,7 @@ void CardShell::execute(rsc::cAPDU const &capdu) {
 
 void CardShell::transmit(scb::Bytes const &buffer) {
     if (!has_card())
-        throw std::runtime_error("cannot execute cAPDU, no card present");
+        throw std::runtime_error("cannot transmit, no card present");
 
     last_rapdu_ = rscCard_->raw_transmit(buffer);
     execution_yield_ << "< ";
