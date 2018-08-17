@@ -135,6 +135,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>rsc.lib;scb.lib;scc.lib;libcrypto.lib;libssl.lib;crypt32.lib;ws2_32.lib;Winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
       <Command>$(SolutionDir)$(ProjectName)\gen_ver.bat</Command>
@@ -154,6 +155,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>rsc.lib;scb.lib;scc.lib;libcrypto.lib;libssl.lib;crypt32.lib;ws2_32.lib;Winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
       <Command>$(SolutionDir)$(ProjectName)\gen_ver.bat</Command>
