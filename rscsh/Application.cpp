@@ -313,7 +313,7 @@ void Application::change_font_size(int delta) {
 void Application::log(char const *message) {
     DWORD selStart, selEnd;
 
-    SendMessage(hOutput_, EM_GETSEL, reinterpret_cast<WPARAM>(&selStart), reinterpret_cast<WPARAM>(&selEnd));
+    SendMessage(hOutput_, EM_GETSEL, reinterpret_cast<WPARAM>(&selStart), reinterpret_cast<LPARAM>(&selEnd));
 
     int length = GetWindowTextLength(hOutput_);
     SendMessage(hOutput_, EM_SETSEL, length, length);
@@ -324,7 +324,7 @@ void Application::log(char const *message) {
 void Application::log(wchar_t const *message) {
     DWORD selStart, selEnd;
 
-    SendMessage(hOutput_, EM_GETSEL, reinterpret_cast<WPARAM>(&selStart), reinterpret_cast<WPARAM>(&selEnd));
+    SendMessage(hOutput_, EM_GETSEL, reinterpret_cast<WPARAM>(&selStart), reinterpret_cast<LPARAM>(&selEnd));
 
     int length = GetWindowTextLength(hOutput_);
     SendMessage(hOutput_, EM_SETSEL, length, length);
