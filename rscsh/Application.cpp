@@ -267,7 +267,7 @@ void Application::input_proc_text_changed() {
     if (selStart == selEnd) {
         unsigned wordSize = selEnd;
         if (auto it = std::find(buffer.rbegin() + buffer.size() - selEnd, buffer.rend(), ' '); it != buffer.rend()) {
-            wordSize = buffer.end() - (buffer.size() - selEnd) - it.base();
+            wordSize = static_cast<unsigned>(buffer.end() - (buffer.size() - selEnd) - it.base());
         }
         set_symbols(selEnd, wordSize);
     } else {
@@ -444,6 +444,6 @@ void Application::erase_last_input_word() {
 
     *it = L'\0';
     SetWindowText(hInput_, buffer.data());
-    DWORD end = it.base() - buffer.begin();
+    DWORD end = static_cast<DWORD>(it.base() - buffer.begin());
     SendMessage(hInput_, EM_SETSEL, end, end);
 }
