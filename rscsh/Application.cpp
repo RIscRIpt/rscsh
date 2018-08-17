@@ -29,7 +29,7 @@ wchar_t const *Application::APP_VERSION = L"" VERSION;
 
 int const Application::MIN_FONT_SIZE = 12;
 int const Application::DEF_FONT_SIZE = 14;
-int const Application::MAX_FONT_SIZE = 36;
+int const Application::MAX_FONT_SIZE = 72;
 
 Application::Application(HINSTANCE hInstance)
     : hInstance_(hInstance)
