@@ -213,6 +213,8 @@ bool Application::input_proc_char(WPARAM wParam, LPARAM lParam) {
             return true;
         case VK_LBUTTON:
             return true;
+        case 127: // DEL
+            return true;
     }
     return false;
 }
@@ -225,6 +227,13 @@ bool Application::input_proc_keydown(WPARAM wParam, LPARAM lParam) {
         case 'A':
             if (input_ctrl_pressed_) {
                 SendMessage(hInput_, EM_SETSEL, 0, -1);
+                return true;
+            }
+            break;
+        case 'W':
+        case VK_BACK:
+            if (input_ctrl_pressed_) {
+                erase_last_input_word();
                 return true;
             }
             break;
@@ -401,4 +410,31 @@ void Application::select_input_history_entry(int offset) {
     } else {
         SetWindowText(hInput_, L"");
     }
+}
+
+void Application::erase_last_input_word() {
+    std::vector<wchar_t> buffer(2048);
+
+    auto actualLength = GetWindowText(hInput_, buffer.data(), static_cast<int>(buffer.size()));
+    if (actualLength == 0)
+        return;
+
+    buffer.resize(actualLength);
+
+    std::vector<wchar_t>::reverse_iterator it = buffer.rbegin();
+
+    // Skip trailing spaces
+    while (it != buffer.rend() && *it == L' ')
+        ++it;
+
+    // Erase last word
+    while (it != buffer.rend() && *it != L' ')
+        ++it;
+
+    --it; // Keep space
+
+    *it = L'\0';
+    SetWindowText(hInput_, buffer.data());
+    DWORD end = it.base() - buffer.begin();
+    SendMessage(hInput_, EM_SETSEL, end, end);
 }
