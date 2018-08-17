@@ -163,9 +163,9 @@ void Application::set_title(std::wstring const &title) {
     SetWindowText(hMainDialog_, fullTitle.c_str());
 }
 
-void Application::set_symbols(size_t total, size_t noSpace) {
+void Application::set_symbols(size_t count1, size_t count2) {
     std::wstringstream ss;
-    ss << total << '/' << noSpace;
+    ss << count1 << '/' << count2;
     SetWindowText(hSymbols_, ss.str().c_str());
 }
 
@@ -257,18 +257,27 @@ bool Application::input_proc_keyup(WPARAM wParam, LPARAM lParam) {
 }
 
 void Application::input_proc_text_changed() {
+    DWORD selStart, selEnd;
     std::vector<wchar_t> buffer(2048);
 
+    SendMessage(hInput_, EM_GETSEL, reinterpret_cast<WPARAM>(&selStart), reinterpret_cast<LPARAM>(&selEnd));
     auto actualSize = GetWindowText(hInput_, buffer.data(), static_cast<int>(buffer.size()));
     buffer.resize(actualSize + 1);
 
-    size_t total = buffer.size() - 1;
-    size_t noSpace = total;
-    if (auto it = std::find(buffer.rbegin(), buffer.rend(), ' '); it != buffer.rend()) {
-        noSpace = buffer.end() - it.base() - 1;
+    if (selStart == selEnd) {
+        unsigned wordSize = selEnd;
+        if (auto it = std::find(buffer.rbegin() + buffer.size() - selEnd, buffer.rend(), ' '); it != buffer.rend()) {
+            wordSize = buffer.end() - (buffer.size() - selEnd) - it.base();
+        }
+        set_symbols(selEnd, wordSize);
+    } else {
+        unsigned selection;
+        if (selStart <= selEnd)
+            selection = selEnd - selStart;
+        else
+            selection = selStart - selEnd;
+        set_symbols(actualSize, selection);
     }
-
-    set_symbols(total, noSpace);
 }
 
 HFONT Application::create_font(int size) {

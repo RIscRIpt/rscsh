@@ -29,7 +29,7 @@ private:
     void update_main_dialog_layout();
 
     void set_title(std::wstring const &title);
-    void set_symbols(size_t total, size_t noSpace);
+    void set_symbols(size_t count1, size_t count2);
 
     void shell_done();
 
