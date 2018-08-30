@@ -236,7 +236,7 @@ void CardShell::select(std::vector<std::wstring> const &argv) {
 
     if (argv.size() < 4) {
     usage:
-        execution_yield_ << "usage: select <first/next> <ascii/hex> <name>\r\n";
+        execution_yield_ << "usage: select <first/next> <hex/ascii/unicode> <name>\r\n";
         return;
     }
 
@@ -248,10 +248,12 @@ void CardShell::select(std::vector<std::wstring> const &argv) {
         goto usage;
     }
 
-    if (argv[2] == L"ascii") {
-        stringAs = scb::Bytes::Raw;
-    } else if (argv[2] == L"hex") {
+    if (argv[2] == L"hex") {
         stringAs = scb::Bytes::Hex;
+    } else if (argv[2] == L"ascii") {
+        stringAs = scb::Bytes::ASCII;
+    } else if (argv[2] == L"unicode") {
+        stringAs = scb::Bytes::Unicode;
     } else {
         goto usage;
     }

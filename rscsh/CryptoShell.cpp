@@ -48,7 +48,7 @@ scb::Bytes CryptoShell::to_bytes(scb::Bytes::StringAs as, std::vector<std::wstri
 void CryptoShell::sha(std::vector<std::wstring> const &argv) {
     if (argv.size() < 4) {
     usage:
-        execution_yield_ << "crypto sha [1/224/256/384/512] <hex/ascii> {buffer}\r\n";
+        execution_yield_ << "crypto sha [1/224/256/384/512] <hex/ascii/unicode> {buffer}\r\n";
         return;
     }
 
@@ -58,7 +58,9 @@ void CryptoShell::sha(std::vector<std::wstring> const &argv) {
     if (argv[3] == L"hex") {
         buffer = to_bytes(scb::Bytes::Hex, argv.begin() + 4, argv.end());
     } else if (argv[3] == L"ascii") {
-        buffer = to_bytes(scb::Bytes::Raw, argv.begin() + 4, argv.end());
+        buffer = to_bytes(scb::Bytes::ASCII, argv.begin() + 4, argv.end());
+    } else if (argv[3] == L"unicode") {
+        buffer = to_bytes(scb::Bytes::Unicode, argv.begin() + 4, argv.end());
     } else {
         goto usage;
     }
@@ -90,7 +92,7 @@ void CryptoShell::sha(std::vector<std::wstring> const &argv) {
 void CryptoShell::rsa(std::vector<std::wstring> const &argv) {
     if (argv.size() < 5) {
     usage:
-        execution_yield_ << "crypto rsa <modulus> <exponent> <hex/ascii> {buffer}\r\n";
+        execution_yield_ << "crypto rsa <modulus> <exponent> <hex/ascii/unicode> {buffer}\r\n";
         return;
     }
 
@@ -101,7 +103,9 @@ void CryptoShell::rsa(std::vector<std::wstring> const &argv) {
     if (argv[4] == L"hex") {
         buffer = to_bytes(scb::Bytes::Hex, argv.begin() + 5, argv.end());
     } else if (argv[4] == L"ascii") {
-        buffer = to_bytes(scb::Bytes::Raw, argv.begin() + 5, argv.end());
+        buffer = to_bytes(scb::Bytes::ASCII, argv.begin() + 5, argv.end());
+    } else if (argv[4] == L"unicode") {
+        buffer = to_bytes(scb::Bytes::Unicode, argv.begin() + 5, argv.end());
     } else {
         goto usage;
     }
@@ -136,7 +140,7 @@ void CryptoShell::rsa_keygen(std::vector<std::wstring> const &argv) {
 void CryptoShell::des(std::vector<std::wstring> const &argv) {
     if (argv.size() < 5) {
     usage:
-        execution_yield_ << "crypto des [decrypt / encrypt] [cbc <iv> / ecb] <key> <hex/ascii> {buffer}\r\n";
+        execution_yield_ << "crypto des [decrypt / encrypt] [cbc <iv> / ecb] <key> <hex/ascii/unicode> {buffer}\r\n";
         return;
     }
 
@@ -175,7 +179,10 @@ void CryptoShell::des(std::vector<std::wstring> const &argv) {
         buffer = to_bytes(scb::Bytes::Hex, nextArg, argv.end());
     } else if (*nextArg == L"ascii") {
         ++nextArg;
-        buffer = to_bytes(scb::Bytes::Raw, nextArg, argv.end());
+        buffer = to_bytes(scb::Bytes::ASCII, nextArg, argv.end());
+    } else if (*nextArg == L"unicode") {
+        ++nextArg;
+        buffer = to_bytes(scb::Bytes::Unicode, nextArg, argv.end());
     } else {
         goto usage;
     }

@@ -6,4 +6,4 @@ X( L"dump",                  dump,                  L"{hex string}\r\n\t-- Dumps
 X( L"parse",                 parse,                 L"[atr {hex string} / {hex string}]\r\n\t-- Parses ATR / TLV hex string / TLV last rAPDU." )
 X( L"raw",                   raw,                   L"{command}\r\n\t-- Transmits raw buffer to the card." )
 X( L"apdu",                  apdu,                  L"CLA INS P1 P2 [Lc {buffer}] [Le]\r\n\t-- Transmits APDU command to the card." )
-X( L"select",                select,                L"<first/next> <ascii/hex> <name>\r\n\t-- Sends select command to the card." )
+X( L"select",                select,                L"<first/next> <hex/ascii/unicode> <name>\r\n\t-- Sends select command to the card." )
