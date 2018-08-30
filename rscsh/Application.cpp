@@ -383,8 +383,8 @@ void Application::process_input() {
 
     if (buffer.size() > 1 && (inputHistory_.empty() || inputHistory_.back() != buffer.data())) {
         inputHistory_.emplace_back(buffer.data());
-        selectedInput_ = inputHistory_.end();
     }
+    selectedInput_ = inputHistory_.end();
 
     shell_execute(buffer.data());
 }
