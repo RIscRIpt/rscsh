@@ -232,10 +232,8 @@ bool Application::input_proc_keydown(WPARAM wParam, LPARAM lParam) {
             break;
         case 'W':
         case VK_BACK:
-            if (input_ctrl_pressed_) {
-                erase_last_input_word();
-                return true;
-            }
+            if (input_ctrl_pressed_)
+                return erase_word_at_cursor();
             break;
         case VK_DOWN:
             select_input_history_entry(+1);
@@ -421,29 +419,37 @@ void Application::select_input_history_entry(int offset) {
     }
 }
 
-void Application::erase_last_input_word() {
+bool Application::erase_word_at_cursor() {
+    DWORD selStart, selEnd;
     std::vector<wchar_t> buffer(2048);
 
     auto actualLength = GetWindowText(hInput_, buffer.data(), static_cast<int>(buffer.size()));
     if (actualLength == 0)
-        return;
-
+        return false;
     buffer.resize(actualLength);
 
-    std::vector<wchar_t>::reverse_iterator it = buffer.rbegin();
+    SendMessage(hInput_, EM_GETSEL, reinterpret_cast<WPARAM>(&selStart), reinterpret_cast<LPARAM>(&selEnd));
+    if (selStart != selEnd)
+        return false;
+
+    auto erase_from = buffer.rbegin() + (actualLength - selEnd);
+    auto erase_to = erase_from;
 
     // Skip trailing spaces
-    while (it != buffer.rend() && *it == L' ')
-        ++it;
+    while (erase_to != buffer.rend() && *erase_to == L' ')
+        ++erase_to;
 
     // Erase last word
-    while (it != buffer.rend() && *it != L' ')
-        ++it;
+    while (erase_to != buffer.rend() && *erase_to != L' ')
+        ++erase_to;
 
-    --it; // Keep space
+    //--erase_to; // Keep space
 
-    *it = L'\0';
+    std::copy(erase_from.base(), buffer.end(), erase_to.base());
+    *(erase_to.base() + (buffer.end() - erase_from.base())) = '\0';
     SetWindowText(hInput_, buffer.data());
-    DWORD end = static_cast<DWORD>(it.base() - buffer.begin());
+    DWORD end = static_cast<DWORD>(erase_to.base() - buffer.begin());
     SendMessage(hInput_, EM_SETSEL, end, end);
+
+    return true;
 }

@@ -57,7 +57,7 @@ private:
     void shell_execute(LPCTSTR command);
 
     void select_input_history_entry(int offset);
-    void erase_last_input_word();
+    bool erase_word_at_cursor();
 
     HINSTANCE hInstance_;
 
