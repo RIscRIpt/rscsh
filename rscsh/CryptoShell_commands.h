@@ -3,3 +3,5 @@ X( L"rsa",               rsa,               L"<modulus> <exponent> <hex/ascii/un
 X( L"rsa-keygen",        rsa_keygen,        L"<bits> <public exponent>\r\n\t-- Generate RSA public-private key pair." )
 X( L"des",               des,               L"[decrypt / encrypt] [cbc <iv> / ecb] <key> <hex/ascii/unicode> {buffer}\r\n\t-- Decrypt / encrypt buffer using DES algorithm." )
 X( L"des-kcv",           des_kcv,           L"<key>\r\n\t-- Get KCV of the specified key." )
+X( L"aes",               aes,               L"[decrypt / encrypt] [cbc <iv> / ecb] <key> <hex/ascii/unicode> {buffer}\r\n\t-- Decrypt / encrypt buffer using AES algorithm." )
+X( L"aes-kcv",           aes_kcv,           L"<key>\r\n\t-- Get KCV of the specified key." )

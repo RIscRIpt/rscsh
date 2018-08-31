@@ -4,6 +4,7 @@
 #include <scc/Hash.h>
 #include <scc/RSA.h>
 #include <scc/DES.h>
+#include <scc/AES.h>
 
 std::unordered_map<std::wstring, void (CryptoShell::*)(std::vector<std::wstring> const &)> const CryptoShell::command_map_{
 #define X(name, func, _) { name, &CryptoShell::func },
@@ -205,15 +206,87 @@ void CryptoShell::des_kcv(std::vector<std::wstring> const &argv) {
         return;
     }
 
-    scb::Bytes zeros(8);
     scb::Bytes kcv;
     auto key = to_bytes(scb::Bytes::Hex, argv.begin() + 2, argv.end());
+
     scc::DES DES(key);
     if (DES.key.size() > 8) {
-        kcv = DES.crypt3(zeros, scc::operation::Encrypt, {});
+        kcv = DES.encrypt3_ecb(scb::Bytes(key.size()));
     } else {
-        kcv = DES.crypt1(zeros, scc::operation::Encrypt, {});
+        kcv = DES.encrypt1_ecb(scb::Bytes(key.size()));
     }
+
+    kcv.left(3).print(execution_yield_, L"");
+    execution_yield_ << "\r\n";
+}
+
+void CryptoShell::aes(std::vector<std::wstring> const &argv) {
+    if (argv.size() < 5) {
+    usage:
+        execution_yield_ << "crypto aes [decrypt / encrypt] [cbc <iv> / ecb] <key> <hex/ascii/unicode> {buffer}\r\n";
+        return;
+    }
+
+    auto nextArg = argv.begin() + 2;
+
+    scc::operation::Operation operation;
+    auto const &szOperation = *nextArg++;
+    if (szOperation == L"decrypt")
+        operation = scc::operation::Decrypt;
+    else if (szOperation == L"encrypt")
+        operation = scc::operation::Encrypt;
+    else
+        goto usage;
+
+    scb::Bytes iv;
+
+    scc::mode::Mode mode;
+    auto const &szMode = *nextArg++;
+    if (szMode == L"cbc") {
+        mode = scc::mode::CBC;
+        iv = to_bytes(scb::Bytes::Hex, nextArg, nextArg + 1);
+        ++nextArg;
+    } else if (szMode == L"ecb") {
+        mode = scc::mode::ECB;
+    } else {
+        goto usage;
+    }
+
+    auto key = to_bytes(scb::Bytes::Hex, nextArg, nextArg + 1);
+    ++nextArg;
+
+    scb::Bytes buffer;
+
+    if (*nextArg == L"hex") {
+        ++nextArg;
+        buffer = to_bytes(scb::Bytes::Hex, nextArg, argv.end());
+    } else if (*nextArg == L"ascii") {
+        ++nextArg;
+        buffer = to_bytes(scb::Bytes::ASCII, nextArg, argv.end());
+    } else if (*nextArg == L"unicode") {
+        ++nextArg;
+        buffer = to_bytes(scb::Bytes::Unicode, nextArg, argv.end());
+    } else {
+        goto usage;
+    }
+
+    scc::AES AES(key);
+    auto result = AES.crypt(buffer, operation, iv);
+
+    result.print(execution_yield_, L"");
+    execution_yield_ << "\r\n";
+}
+
+void CryptoShell::aes_kcv(std::vector<std::wstring> const &argv) {
+    if (argv.size() < 3) {
+        execution_yield_ << "crypto aes-kcv <key>\r\n";
+        return;
+    }
+
+    auto key = to_bytes(scb::Bytes::Hex, argv.begin() + 2, argv.end());
+
+    scc::AES AES(key);
+    auto kcv = AES.encrypt_ecb(scb::Bytes(key.size()));
 
     kcv.left(3).print(execution_yield_, L"");
     execution_yield_ << "\r\n";
