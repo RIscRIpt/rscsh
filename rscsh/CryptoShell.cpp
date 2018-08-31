@@ -146,25 +146,25 @@ void CryptoShell::des(std::vector<std::wstring> const &argv) {
 
     auto nextArg = argv.begin() + 2;
 
-    scc::DES::Operation operation;
+    scc::operation::Operation operation;
     auto const &szOperation = *nextArg++;
     if (szOperation == L"decrypt")
-        operation = scc::DES::Decrypt;
+        operation = scc::operation::Decrypt;
     else if (szOperation == L"encrypt")
-        operation = scc::DES::Encrypt;
+        operation = scc::operation::Encrypt;
     else
         goto usage;
 
     scb::Bytes iv;
 
-    scc::DES::Mode mode;
+    scc::mode::Mode mode;
     auto const &szMode = *nextArg++;
     if (szMode == L"cbc") {
-        mode = scc::DES::CBC;
+        mode = scc::mode::CBC;
         iv = to_bytes(scb::Bytes::Hex, nextArg, nextArg + 1);
         ++nextArg;
     } else if (szMode == L"ecb") {
-        mode = scc::DES::ECB;
+        mode = scc::mode::ECB;
     } else {
         goto usage;
     }
@@ -210,9 +210,9 @@ void CryptoShell::des_kcv(std::vector<std::wstring> const &argv) {
     auto key = to_bytes(scb::Bytes::Hex, argv.begin() + 2, argv.end());
     scc::DES DES(key);
     if (DES.key.size() > 8) {
-        kcv = DES.crypt3(zeros, scc::DES::Encrypt, {});
+        kcv = DES.crypt3(zeros, scc::operation::Encrypt, {});
     } else {
-        kcv = DES.crypt1(zeros, scc::DES::Encrypt, {});
+        kcv = DES.crypt1(zeros, scc::operation::Encrypt, {});
     }
 
     kcv.left(3).print(execution_yield_, L"");
