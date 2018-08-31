@@ -231,39 +231,50 @@ void CardShell::apdu(std::vector<std::wstring> const &argv) {
 
 void CardShell::select(std::vector<std::wstring> const &argv) {
     scb::Bytes name;
-    bool first;
-    scb::Bytes::StringAs stringAs;
+    bool first = true;
+    scb::Bytes::StringAs stringAs = scb::Bytes::Hex;
 
-    if (argv.size() < 4) {
+    if (argv.size() < 2) {
     usage:
         execution_yield_ << "usage: select <first/next> <hex/ascii/unicode> <name>\r\n";
         return;
     }
 
-    if (argv[1] == L"first") {
+    auto nextArg = argv.begin() + 1;
+
+    if (*nextArg == L"first") {
         first = true;
-    } else if (argv[1] == L"next") {
+        ++nextArg;
+    } else if (*nextArg == L"next") {
         first = false;
-    } else {
-        goto usage;
+        ++nextArg;
     }
 
-    if (argv[2] == L"hex") {
+    if (nextArg == argv.end())
+        goto usage;
+
+    if (*nextArg == L"hex") {
         stringAs = scb::Bytes::Hex;
-    } else if (argv[2] == L"ascii") {
+        ++nextArg;
+    } else if (*nextArg == L"ascii") {
         stringAs = scb::Bytes::ASCII;
-    } else if (argv[2] == L"unicode") {
+        ++nextArg;
+    } else if (*nextArg == L"unicode") {
         stringAs = scb::Bytes::Unicode;
-    } else {
+        ++nextArg;
+    }
+
+    if (nextArg == argv.end())
         goto usage;
-    }
 
-    for (size_t i = 3; i < argv.size(); i++) {
-        name += scb::Bytes(argv[i], stringAs);
-    }
+    while (nextArg != argv.end())
+        name += scb::Bytes(*nextArg++, stringAs);
 
-    execution_yield_ << "SELECT " << argv[1] << " hex ";
-    name.print(execution_yield_);
+    execution_yield_
+        << "SELECT "
+        << (first ? "first" : "next")
+        << " hex ";
+    name.print(execution_yield_, L" ");
     execution_yield_ << "\r\n";
 
     execute(rsc::cAPDU::SELECT(name, true, first));
